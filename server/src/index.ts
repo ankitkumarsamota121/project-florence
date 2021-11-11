@@ -4,8 +4,9 @@ import path from 'path';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
-import { Record } from './entity/Record';
+import { Record } from './entities/Record';
 import { HelloResolver } from './resolvers/hello';
+import { RecordResolver } from './resolvers/record';
 
 const main = async () => {
   const conn = await createConnection({
@@ -53,7 +54,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver],
+      resolvers: [HelloResolver, RecordResolver],
       validate: false,
     }),
     context: ({ req, res }) => ({
@@ -67,7 +68,6 @@ const main = async () => {
   await apolloServer.start();
   apolloServer.applyMiddleware({
     app,
-    cors: false,
   });
 
   app.listen(4000, () => {
