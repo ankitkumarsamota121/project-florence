@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es6",
     "module": "commonjs",
     "lib": ["dom", "es6", "es2017", "esnext.asynciterable"],
     "skipLibCheck": true,
@@ -23,10 +23,6 @@
     "resolveJsonModule": true,
     "baseUrl": "."
   },
-  "typeRoots": [
-    "./src/types", // this is where you define your types
-    "./node_modules/@types" //this where npm packages containing types are located
-  ],
   "exclude": ["node_modules"],
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.tsx", "./src/**/*.ts"]
 }
