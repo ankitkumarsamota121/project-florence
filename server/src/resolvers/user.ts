@@ -15,16 +15,7 @@ import { isAuth } from '../middleware/isAuth';
 import { MyContext } from '../types';
 import { Patient } from '../entities/Patient';
 import { Doctor } from '../entities/Doctor';
-
-@ObjectType()
-class FieldError {
-  @Field()
-  field: string;
-
-  @Field()
-  message: string;
-}
-
+import { FieldError } from './FieldError';
 @ObjectType()
 class UserResponse {
   @Field(() => String, { nullable: true })

@@ -1,19 +1,21 @@
+import { Patient } from '../entities/Patient';
+import { isAuth } from '../middleware/isAuth';
+import { MyContext } from '../types';
 import {
   Arg,
-  // Ctx,
+  Ctx,
   Field,
   // FieldResolver,
   InputType,
   Int,
   Mutation,
-  // ObjectType,
+  ObjectType,
   Query,
   Resolver,
-  // Root,
-  // UseMiddleware,
+  UseMiddleware,
 } from 'type-graphql';
 import { Record } from '../entities/Record';
-// import { MyContext } from '../types';
+import { FieldError } from './FieldError';
 
 @InputType()
 class RecordInput {
@@ -29,47 +31,85 @@ class RecordInput {
   description: string;
 }
 
+@ObjectType()
+class RecordResponse {
+  @Field(() => Record, { nullable: true })
+  record?: Record;
+
+  @Field(() => [FieldError], { nullable: true })
+  errors?: FieldError[];
+}
+
 @Resolver(Record)
 export class RecordResolver {
   @Query(() => [Record])
-  async records(): Promise<Record[]> {
+  @UseMiddleware(isAuth)
+  async records(@Ctx() { payload }: MyContext): Promise<Record[]> {
     // @Arg('cursor', () => String, { nullable: true }) cursor: string | null // @Arg('limit', () => Int) limit: number,
     // const recordRepo = getConnection().getRepository(Record);
-    const records = await Record.find();
+    const records = await Record.find({ where: { patient: payload!.userId } });
     return records;
   }
 
   @Query(() => Record, { nullable: true })
-  async record(@Arg('id', () => Int) id: number): Promise<Record | undefined> {
-    // const recordRepo = getConnection().getRepository(Record);
-    const record = await Record.findOne({ id });
-    return record;
+  @UseMiddleware(isAuth)
+  async record(
+    @Arg('id', () => Int) id: number,
+    @Ctx() { payload }: MyContext
+  ): Promise<RecordResponse> {
+    const record = await Record.findOne({
+      id: id,
+      patient: await Patient.findOne({ where: { id: payload!.userId } }),
+    });
+    if (!record) {
+      return {
+        errors: [
+          {
+            field: 'record id',
+            message: 'No Record found with given ID.',
+          },
+        ],
+      };
+    }
+
+    return { record };
   }
 
-  @Mutation(() => Record)
-  // @UseMiddleware(isAuth)
+  @Mutation(() => RecordResponse)
+  @UseMiddleware(isAuth)
   async createRecord(
-    @Arg('input') input: RecordInput
-    // @Ctx() { req }: MyContext
-  ): Promise<Record> {
-    const record = await Record.create({
-      title: input.title,
-      category: input.category,
-      description: input.description,
-    });
+    @Arg('input') input: RecordInput,
+    @Ctx() { payload }: MyContext
+  ): Promise<RecordResponse> {
+    const record = await Record.create(input);
+    const user = await Patient.findOne({ where: { id: payload!.userId } });
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: 'user',
+            message: 'User not found!',
+          },
+        ],
+      };
+    }
+
+    record.patient = user;
     await Record.save(record);
 
-    return record;
+    return {
+      record,
+    };
   }
 
   @Mutation(() => Record, { nullable: true })
-  // @UseMiddleware(isAuth)
+  @UseMiddleware(isAuth)
   async updateRecord(
     @Arg('id', () => Int) id: number,
     @Arg('title', () => String, { nullable: true }) title?: string,
     @Arg('category', () => String, { nullable: true }) category?: string,
     @Arg('description', () => String, { nullable: true }) description?: string
-    // @Ctx() { req }: MyContext
+    // @Ctx() { payload }: MyContext
   ): Promise<Record | null> {
     const record = await Record.findOne(id);
     if (!record) return null;

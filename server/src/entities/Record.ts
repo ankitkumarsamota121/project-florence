@@ -1,5 +1,12 @@
 import { Field, ID, ObjectType } from 'type-graphql';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Patient } from './Patient';
 
 @ObjectType()
 @Entity()
@@ -21,4 +28,7 @@ export class Record extends BaseEntity {
   @Field()
   @Column()
   description: string;
+
+  @ManyToOne(() => Patient, (patient) => patient.records)
+  patient: Patient;
 }
