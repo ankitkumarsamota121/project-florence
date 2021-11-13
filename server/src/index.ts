@@ -7,6 +7,9 @@ import { createConnection } from 'typeorm';
 import { Record } from './entities/Record';
 import { HelloResolver } from './resolvers/hello';
 import { RecordResolver } from './resolvers/record';
+import { UserResolver } from './resolvers/user';
+import { Patient } from './entities/Patient';
+import { Doctor } from './entities/Doctor';
 
 const main = async () => {
   const conn = await createConnection({
@@ -15,7 +18,7 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Record],
+    entities: [Record, Patient, Doctor],
   });
   await conn.runMigrations();
 
@@ -54,7 +57,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, RecordResolver],
+      resolvers: [HelloResolver, RecordResolver, UserResolver],
       validate: false,
     }),
     context: ({ req, res }) => ({

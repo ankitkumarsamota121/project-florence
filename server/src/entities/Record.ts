@@ -1,10 +1,10 @@
-import { Field, ObjectType } from 'type-graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Field, ID, ObjectType } from 'type-graphql';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
-export class Record {
-  @Field()
+export class Record extends BaseEntity {
+  @Field(() => ID)
   @PrimaryGeneratedColumn('increment')
   id: number;
 

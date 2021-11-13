@@ -12,8 +12,6 @@ import {
   // Root,
   // UseMiddleware,
 } from 'type-graphql';
-import { getConnection } from 'typeorm';
-// import { getConnection, getRepository } from 'typeorm';
 import { Record } from '../entities/Record';
 // import { MyContext } from '../types';
 
@@ -36,15 +34,16 @@ export class RecordResolver {
   @Query(() => [Record])
   async records(): Promise<Record[]> {
     // @Arg('cursor', () => String, { nullable: true }) cursor: string | null // @Arg('limit', () => Int) limit: number,
-    const recordRepo = getConnection().getRepository(Record);
-    const records = await recordRepo.find();
+    // const recordRepo = getConnection().getRepository(Record);
+    const records = await Record.find();
     return records;
   }
 
   @Query(() => Record, { nullable: true })
-  record(@Arg('id', () => Int) id: number): Promise<Record | undefined> {
-    const recordRepo = getConnection().getRepository(Record);
-    return recordRepo.findOne(id);
+  async record(@Arg('id', () => Int) id: number): Promise<Record | undefined> {
+    // const recordRepo = getConnection().getRepository(Record);
+    const record = await Record.findOne({ id });
+    return record;
   }
 
   @Mutation(() => Record)
@@ -53,12 +52,12 @@ export class RecordResolver {
     @Arg('input') input: RecordInput
     // @Ctx() { req }: MyContext
   ): Promise<Record> {
-    const recordRepo = await getConnection().getRepository(Record);
-    const record = new Record();
-    record.title = input.title;
-    record.category = input.category;
-    record.description = input.description;
-    await recordRepo.save(record);
+    const record = await Record.create({
+      title: input.title,
+      category: input.category,
+      description: input.description,
+    });
+    await Record.save(record);
 
     return record;
   }
@@ -72,13 +71,12 @@ export class RecordResolver {
     @Arg('description', () => String, { nullable: true }) description?: string
     // @Ctx() { req }: MyContext
   ): Promise<Record | null> {
-    const recordRepo = getConnection().getRepository(Record);
-    const record = await recordRepo.findOne(id);
+    const record = await Record.findOne(id);
     if (!record) return null;
     if (title) record.title = title;
     if (category) record.category = category;
     if (description) record.description = description;
-    await recordRepo.save(record);
+    await Record.save(record);
     return record;
   }
 
@@ -99,9 +97,8 @@ export class RecordResolver {
 
     // await Updoot.delete({ postId: id });
     // await Post.delete({ id });
-    const recordRepo = getConnection().getRepository(Record);
 
-    await recordRepo.delete({ id });
+    await Record.delete({ id });
     return true;
   }
 }
