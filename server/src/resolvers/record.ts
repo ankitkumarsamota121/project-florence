@@ -1,5 +1,5 @@
 import { Patient } from '../entities/Patient';
-import { isAuth } from '../middleware/isAuth';
+import { isAuthenticated } from '../middleware/isAuthenticated';
 import { MyContext } from '../types';
 import {
   Arg,
@@ -37,13 +37,13 @@ class RecordResponse {
   record?: Record;
 
   @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
+  error?: FieldError;
 }
 
 @Resolver(Record)
 export class RecordResolver {
   @Query(() => [Record])
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthenticated)
   async records(@Ctx() { payload }: MyContext): Promise<Record[]> {
     // @Arg('cursor', () => String, { nullable: true }) cursor: string | null // @Arg('limit', () => Int) limit: number,
     // const recordRepo = getConnection().getRepository(Record);
@@ -52,7 +52,7 @@ export class RecordResolver {
   }
 
   @Query(() => Record, { nullable: true })
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthenticated)
   async record(
     @Arg('id', () => Int) id: number,
     @Ctx() { payload }: MyContext
@@ -63,12 +63,7 @@ export class RecordResolver {
     });
     if (!record) {
       return {
-        errors: [
-          {
-            field: 'record id',
-            message: 'No Record found with given ID.',
-          },
-        ],
+        error: new FieldError('record id', 'No Record found with given ID.'),
       };
     }
 
@@ -76,25 +71,20 @@ export class RecordResolver {
   }
 
   @Mutation(() => RecordResponse)
-  @UseMiddleware(isAuth)
-  async createRecord(
+  @UseMiddleware(isAuthenticated)
+  async createPatientRecord(
     @Arg('input') input: RecordInput,
     @Ctx() { payload }: MyContext
   ): Promise<RecordResponse> {
     const record = await Record.create(input);
-    const user = await Patient.findOne({ where: { id: payload!.userId } });
-    if (!user) {
+    const patient = await Patient.findOne({ where: { id: payload!.userId } });
+    if (!patient) {
       return {
-        errors: [
-          {
-            field: 'user',
-            message: 'User not found!',
-          },
-        ],
+        error: new FieldError('user', 'User not found!'),
       };
     }
 
-    record.patient = user;
+    record.patient = patient;
     await Record.save(record);
 
     return {
@@ -102,29 +92,42 @@ export class RecordResolver {
     };
   }
 
+  /**
+   * TODO: Create a Mutation for the doctor to add records
+   */
+
   @Mutation(() => Record, { nullable: true })
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthenticated)
   async updateRecord(
     @Arg('id', () => Int) id: number,
+    @Ctx() { payload }: MyContext,
     @Arg('title', () => String, { nullable: true }) title?: string,
     @Arg('category', () => String, { nullable: true }) category?: string,
     @Arg('description', () => String, { nullable: true }) description?: string
-    // @Ctx() { payload }: MyContext
-  ): Promise<Record | null> {
-    const record = await Record.findOne(id);
-    if (!record) return null;
+  ): Promise<RecordResponse> {
+    const record = await Record.findOne({
+      id: id,
+      patient: await Patient.findOne({ where: { id: payload!.userId } }),
+    });
+
+    if (!record)
+      return {
+        error: new FieldError('record', 'No record found with the given id.'),
+      };
+
     if (title) record.title = title;
     if (category) record.category = category;
     if (description) record.description = description;
+
     await Record.save(record);
-    return record;
+    return { record };
   }
 
   @Mutation(() => Boolean)
-  // @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthenticated)
   async deleteRecord(
-    @Arg('id', () => Int) id: number
-    // @Ctx() { req }: MyContext
+    @Arg('id', () => Int) id: number,
+    @Ctx() { payload }: MyContext
   ): Promise<boolean> {
     // not cascade way
     // const post = await Post.findOne(id);
@@ -138,7 +141,10 @@ export class RecordResolver {
     // await Updoot.delete({ postId: id });
     // await Post.delete({ id });
 
-    await Record.delete({ id });
+    await Record.delete({
+      id,
+      patient: await Patient.findOne({ where: { id: payload!.userId } }),
+    });
     return true;
   }
 }

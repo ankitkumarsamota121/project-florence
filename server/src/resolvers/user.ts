@@ -11,7 +11,7 @@ import {
 } from 'type-graphql';
 import argon2 from 'argon2';
 import { sign } from 'jsonwebtoken';
-import { isAuth } from '../middleware/isAuth';
+import { isAuthenticated } from '../middleware/isAuthenticated';
 import { MyContext } from '../types';
 import { Patient } from '../entities/Patient';
 import { Doctor } from '../entities/Doctor';
@@ -71,7 +71,7 @@ export class UserResolver {
   }
 
   @Query(() => String)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthenticated)
   async me(@Ctx() { payload }: MyContext) {
     return `Your user id : ${payload!.userId}`;
   }

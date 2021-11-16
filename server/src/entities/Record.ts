@@ -3,9 +3,11 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Doctor } from './Doctor';
 import { Patient } from './Patient';
 
 @ObjectType()
@@ -18,12 +20,14 @@ export class Record extends BaseEntity {
   @Field()
   @Column({ length: 40 })
   title: string;
-  // doctor: string;
 
   @Field()
   @Column()
   category: string;
-  // attachment: string;
+
+  @Field()
+  @Column()
+  attachment: string;
 
   @Field()
   @Column()
@@ -31,4 +35,7 @@ export class Record extends BaseEntity {
 
   @ManyToOne(() => Patient, (patient) => patient.records)
   patient: Patient;
+
+  @ManyToMany(() => Doctor, (doctor) => doctor.records)
+  doctors: Doctor[];
 }
