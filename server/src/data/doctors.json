@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Jacobo Foxcroft",
+    "email": "jfoxcroft0@people.com.cn",
+    "password": "123456",
+    "experience": 2,
+    "specialities": "MC2",
+    "designation": "Structural Engineer"
+  },
+  {
+    "name": "Richie Trowler",
+    "email": "rtrowler1@wikia.com",
+    "password": "123456",
+    "experience": 1,
+    "specialities": "Life Sciences",
+    "designation": "Nurse"
+  },
+  {
+    "name": "Fonsie Offield",
+    "email": "foffield2@mlb.com",
+    "password": "123456",
+    "experience": 8,
+    "specialities": "RhinoCAM",
+    "designation": "Pharmacist"
+  },
+  {
+    "name": "Brunhilda Scrivens",
+    "email": "bscrivens3@indiatimes.com",
+    "password": "123456",
+    "experience": 2,
+    "specialities": "Pro Tools",
+    "designation": "Account Coordinator"
+  },
+  {
+    "name": "Kristan Scare",
+    "email": "kscare4@jigsy.com",
+    "password": "123456",
+    "experience": 13,
+    "specialities": "IBS",
+    "designation": "Web Designer III"
+  }
+]

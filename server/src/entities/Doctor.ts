@@ -9,7 +9,7 @@ import { DoctorRecord } from './DoctorRecord';
 export class Doctor extends User {
   @Field()
   @Column()
-  experience: string;
+  experience: number;
 
   @Field()
   @Column()

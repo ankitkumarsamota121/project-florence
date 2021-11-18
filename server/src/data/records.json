@@ -1,0 +1,122 @@
+[
+  {
+    "title": "Other diseases of spleen",
+    "category": "D738",
+    "attachment": "http://dummyimage.com/224x156.png/dddddd/000000",
+    "description": "Other diseases of spleen"
+  },
+  {
+    "title": "Minor lacerat femor vein at hip and thi lev, unsp leg, subs",
+    "category": "S75119D",
+    "attachment": "http://dummyimage.com/233x118.png/5fa2dd/ffffff",
+    "description": "Minor laceration of femoral vein at hip and thigh level, unspecified leg, subsequent encounter"
+  },
+  {
+    "title": "Other fracture of first thoracic vertebra",
+    "category": "S22018",
+    "attachment": "http://dummyimage.com/129x171.png/5fa2dd/ffffff",
+    "description": "Other fracture of first thoracic vertebra"
+  },
+  {
+    "title": "Other specified injury of splenic vein",
+    "category": "S35328",
+    "attachment": "http://dummyimage.com/157x180.png/ff4444/ffffff",
+    "description": "Other specified injury of splenic vein"
+  },
+  {
+    "title": "Other instability, elbow",
+    "category": "M2532",
+    "attachment": "http://dummyimage.com/190x238.png/cc0000/ffffff",
+    "description": "Other instability, elbow"
+  },
+  {
+    "title": "Furuncle of trunk",
+    "category": "L0222",
+    "attachment": "http://dummyimage.com/186x193.png/ff4444/ffffff",
+    "description": "Furuncle of trunk"
+  },
+  {
+    "title": "Pnctr w fb of unsp bk wl of thorax w/o penet thoracic cavity",
+    "category": "S21249",
+    "attachment": "http://dummyimage.com/111x223.png/cc0000/ffffff",
+    "description": "Puncture wound with foreign body of unspecified back wall of thorax without penetration into thoracic cavity"
+  },
+  {
+    "title": "Other specified disorders of cartilage",
+    "category": "M948X",
+    "attachment": "http://dummyimage.com/165x162.png/dddddd/000000",
+    "description": "Other specified disorders of cartilage"
+  },
+  {
+    "title": "Malformation of placenta, unspecified, third trimester",
+    "category": "O43103",
+    "attachment": "http://dummyimage.com/236x229.png/cc0000/ffffff",
+    "description": "Malformation of placenta, unspecified, third trimester"
+  },
+  {
+    "title": "Subluxation and dislocation of unsp parts of shoulder girdle",
+    "category": "S4330",
+    "attachment": "http://dummyimage.com/123x119.png/ff4444/ffffff",
+    "description": "Subluxation and dislocation of unspecified parts of shoulder girdle"
+  },
+  {
+    "title": "Osseous and sublux stenosis of intvrt foramin of cerv region",
+    "category": "M9961",
+    "attachment": "http://dummyimage.com/128x115.png/ff4444/ffffff",
+    "description": "Osseous and subluxation stenosis of intervertebral foramina of cervical region"
+  },
+  {
+    "title": "Other secondary scoliosis",
+    "category": "M415",
+    "attachment": "http://dummyimage.com/192x250.png/cc0000/ffffff",
+    "description": "Other secondary scoliosis"
+  },
+  {
+    "title": "Breakdown (mechanical) of int fix of vertebrae, init",
+    "category": "T84216A",
+    "attachment": "http://dummyimage.com/156x234.png/5fa2dd/ffffff",
+    "description": "Breakdown (mechanical) of internal fixation device of vertebrae, initial encounter"
+  },
+  {
+    "title": "Malignant pleural effusion",
+    "category": "J910",
+    "attachment": "http://dummyimage.com/170x125.png/5fa2dd/ffffff",
+    "description": "Malignant pleural effusion"
+  },
+  {
+    "title": "Labor and del comp by cord around neck, w comprsn, fetus 1",
+    "category": "O691XX1",
+    "attachment": "http://dummyimage.com/231x218.png/5fa2dd/ffffff",
+    "description": "Labor and delivery complicated by cord around neck, with compression, fetus 1"
+  },
+  {
+    "title": "Microcystoid degeneration of retina",
+    "category": "H3542",
+    "attachment": "http://dummyimage.com/203x246.png/5fa2dd/ffffff",
+    "description": "Microcystoid degeneration of retina"
+  },
+  {
+    "title": "Sltr-haris Type IV physeal fx unspecified calcaneus, 7thK",
+    "category": "S99049K",
+    "attachment": "http://dummyimage.com/105x127.png/cc0000/ffffff",
+    "description": "Salter-Harris Type IV physeal fracture of unspecified calcaneus, subsequent encounter for fracture with nonunion"
+  },
+  {
+    "title": "Poisoning by propionic acid derivatives, self-harm",
+    "category": "T39312",
+    "attachment": "http://dummyimage.com/218x109.png/5fa2dd/ffffff",
+    "description": "Poisoning by propionic acid derivatives, intentional self-harm"
+  },
+  {
+    "title": "Post subcapsular polar infantile and juv cataract, unsp eye",
+    "category": "H26059",
+    "attachment": "http://dummyimage.com/164x152.png/dddddd/000000",
+    "description": "Posterior subcapsular polar infantile and juvenile cataract, unspecified eye"
+  },
+  {
+    "title": "Nondisp fx of coronoid pro of r ulna, 7thF",
+    "category": "S52044F",
+    "attachment": "http://dummyimage.com/151x210.png/dddddd/000000",
+    "description": "Nondisplaced fracture of coronoid process of right ulna, subsequent encounter for open fracture type IIIA, IIIB, or IIIC with routine healing"
+  }
+]

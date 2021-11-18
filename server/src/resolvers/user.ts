@@ -11,18 +11,22 @@ import {
 } from 'type-graphql';
 import argon2 from 'argon2';
 import { sign } from 'jsonwebtoken';
-import { isAuthenticated } from '../middleware/isAuthenticated';
+import { ApolloError, UserInputError } from 'apollo-server-express';
+
+// Types
 import { MyContext } from '../types';
+
+// Middlewares
+import { isAuthenticated } from '../middlewares/isAuthenticated';
+
+// Entities
 import { Patient } from '../entities/Patient';
 import { Doctor } from '../entities/Doctor';
-import { FieldError } from './FieldError';
+
 @ObjectType()
 class UserResponse {
-  @Field(() => String, { nullable: true })
-  accessToken?: string;
-
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
+  @Field(() => String)
+  accessToken: string;
 }
 
 @InputType()
@@ -49,7 +53,7 @@ class PatientInput extends UserInput {
 @InputType()
 class DoctorInput extends UserInput {
   @Field()
-  experience: string;
+  experience: number;
 
   @Field()
   specialities: string;
@@ -97,15 +101,7 @@ export class UserResolver {
         }),
       };
     } catch (err) {
-      console.log(err);
-      return {
-        errors: [
-          {
-            field: 'register',
-            message: 'Unable to register user. Try Again!',
-          },
-        ],
-      };
+      throw new ApolloError(err);
     }
   }
 
@@ -130,15 +126,7 @@ export class UserResolver {
         }),
       };
     } catch (err) {
-      console.log(err);
-      return {
-        errors: [
-          {
-            field: 'register',
-            message: 'Unable to register user. Try Again!',
-          },
-        ],
-      };
+      throw new ApolloError(err);
     }
   }
 
@@ -156,27 +144,13 @@ export class UserResolver {
     }
 
     if (!user) {
-      return {
-        errors: [
-          {
-            field: 'email',
-            message: 'No user found. Try again!',
-          },
-        ],
-      };
+      throw new UserInputError('Incorrect Email/Password!');
     }
 
     const verify = argon2.verify(user.password, password);
 
     if (!verify) {
-      return {
-        errors: [
-          {
-            field: 'password',
-            message: 'Incorrect Password. Try Again!',
-          },
-        ],
-      };
+      throw new UserInputError('Incorrect Email/Password!');
     }
 
     return {
@@ -185,4 +159,8 @@ export class UserResolver {
       }),
     };
   }
+
+  /**
+   * TODO: Add resolvers to update or delete user.
+   */
 }

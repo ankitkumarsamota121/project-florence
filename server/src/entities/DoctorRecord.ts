@@ -11,7 +11,7 @@ import { Record } from './Record';
 @Entity()
 export class DoctorRecord extends BaseEntity {
   @PrimaryColumn()
-  doctorId: number;
+  doctorId: string;
 
   @PrimaryColumn()
   recordId: number;

@@ -1,34 +1,53 @@
-import { Doctor } from '../entities/Doctor';
 import {
   Arg,
   Ctx,
   Field,
-  Int,
   Mutation,
   ObjectType,
   Query,
   Resolver,
   UseMiddleware,
 } from 'type-graphql';
+
+// Types
 import { MyContext } from '../types';
-import { isAuthenticated } from '../middleware/isAuthenticated';
-import { Patient } from '../entities/Patient';
-import { FieldError } from './FieldError';
-import { Record } from '../entities/Record';
-import { isAuthorized } from '../middleware/isAuthorized';
+
+// Entities
+import { Doctor } from '../entities/Doctor';
 import { DoctorPatient } from '../entities/DoctorPatient';
+import { Patient } from '../entities/Patient';
+import { Record } from '../entities/Record';
+
+// Middlewares
+import { isAuthenticated } from '../middlewares/isAuthenticated';
+import { isAuthorized } from '../middlewares/isAuthorized';
+
+// Utils
+// import { FieldError } from '../utils/FieldError';
+import { UserInputError } from 'apollo-server-express';
 
 @ObjectType()
-class DoctorResponse {
-  @Field(() => Boolean, { nullable: true })
-  status?: boolean;
+class BasicRecordResponse {
+  @Field()
+  id: number;
 
-  @Field(() => [FieldError], { nullable: true })
-  error?: FieldError;
+  @Field()
+  title: string;
+
+  @Field()
+  category: string;
+
+  @Field()
+  description: string;
 }
 
 @Resolver(Doctor)
 export class DoctorResolver {
+  /**
+   * * Get all patients
+   * @param context
+   * @returns
+   */
   @Query(() => [Patient])
   @UseMiddleware(isAuthenticated)
   async getPatients(@Ctx() { payload }: MyContext): Promise<Patient[]> {
@@ -41,66 +60,72 @@ export class DoctorResolver {
     return patients;
   }
 
-  @Mutation(() => DoctorResponse)
+  /**
+   * * Add a Patient
+   * @param patientId =>
+   * @param context =>
+   * @returns
+   */
+  @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
   async addPatient(
-    @Arg('patientId', () => Int) patientId: number,
+    @Arg('patientId') patientId: string,
     @Ctx() { payload }: MyContext
   ) {
-    /**
-     * TODO1: Find a more efficient and clever way to check for the availability
-     * TODO2: Add a duplicate key check.
-     */
-    const doctor = await Doctor.findOne({
-      where: { id: payload!.userId },
+    const dpCnt = await DoctorPatient.count({
+      doctorId: payload!.userId,
+      patientId,
     });
-    if (!doctor) {
-      return {
-        status: false,
-        error: new FieldError('doctor', 'No doctor found with given ID.'),
-      };
+    if (dpCnt !== 0) {
+      throw new UserInputError('Patient already exists!');
     }
 
-    const patient = await Patient.findOne({ id: patientId });
-    if (!patient) {
-      return {
-        status: false,
-        error: new FieldError('patient', 'No patient found with given ID.'),
-      };
+    const doctorCnt = await Doctor.count({ id: payload!.userId });
+    if (doctorCnt === 0) {
+      throw new UserInputError('No doctor found with given ID!');
+    }
+
+    const patientCnt = await Patient.count({ id: patientId });
+    if (patientCnt === 0) {
+      throw new UserInputError('No Patient found with given ID!');
     }
 
     await DoctorPatient.create({
-      doctorId: doctor.id,
-      patientId: patientId,
+      doctorId: payload!.userId,
+      patientId,
     }).save();
-    return {
-      status: true,
-    };
+    return true;
   }
 
-  @Mutation(() => DoctorResponse)
+  /**
+   * * Remove a patient
+   * @param patientId
+   * @param context
+   * @returns
+   */
+  @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
   async removePatient(
-    @Arg('patientId', () => Int) patientId: number,
+    @Arg('patientId') patientId: string,
     @Ctx() { payload }: MyContext
   ) {
     await DoctorPatient.delete({
       doctorId: payload!.userId,
       patientId: patientId,
     });
-    return {
-      status: true,
-    };
+    return true;
   }
 
   /**
-   * TODO: getPatientRecords and getRecord
+   * * Get all basic record info for a particular patient
+   * @param patientId
+   * @returns
    */
-  @Query(() => [Record])
+  @Query(() => [BasicRecordResponse])
   @UseMiddleware(isAuthenticated)
   async getPatientRecords(
-    @Arg('patientId', () => Int) patientId: number
-  ): Promise<Record[]> {
+    @Arg('patientId') patientId: string
+  ): Promise<BasicRecordResponse[]> {
     const records = await Record.find({
       where: { patient: await Patient.findOne({ id: patientId }) },
       select: ['id', 'title', 'category', 'description'],
@@ -108,6 +133,11 @@ export class DoctorResolver {
     return records;
   }
 
+  /**
+   * * Get detailed info about a particular record
+   * @param recordId
+   * @returns
+   */
   @Query(() => Record)
   @UseMiddleware(isAuthenticated)
   @UseMiddleware(isAuthorized)

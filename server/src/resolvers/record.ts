@@ -1,5 +1,5 @@
 import { Patient } from '../entities/Patient';
-import { isAuthenticated } from '../middleware/isAuthenticated';
+import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { MyContext } from '../types';
 import {
   Arg,
@@ -15,7 +15,8 @@ import {
   UseMiddleware,
 } from 'type-graphql';
 import { Record } from '../entities/Record';
-import { FieldError } from './FieldError';
+import { FieldError } from '../utils/FieldError';
+import { UserInputError } from 'apollo-server-express';
 
 @InputType()
 class RecordInput {
@@ -56,18 +57,16 @@ export class RecordResolver {
   async record(
     @Arg('id', () => Int) id: number,
     @Ctx() { payload }: MyContext
-  ): Promise<RecordResponse> {
+  ): Promise<Record> {
     const record = await Record.findOne({
       id: id,
       patient: await Patient.findOne({ where: { id: payload!.userId } }),
     });
     if (!record) {
-      return {
-        error: new FieldError('record id', 'No Record found with given ID.'),
-      };
+      throw new UserInputError('Not record found with given ID!');
     }
 
-    return { record };
+    return record;
   }
 
   @Mutation(() => RecordResponse)

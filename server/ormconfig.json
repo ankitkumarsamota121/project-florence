@@ -4,7 +4,7 @@
   "port": 5432,
   "username": "",
   "password": "",
-  "database": "elixir",
+  "database": "project-florence",
   "entities": ["src/entities/**/*.ts"],
   "migrations": ["src/migrations/**/*.ts"]
 }

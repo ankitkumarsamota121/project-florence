@@ -7,6 +7,7 @@
     "watch": "tsc -w",
     "start": "node dist/index.js",
     "dev": "nodemon dist/index.js",
+    "seed": "ts-node src/seed/addDoctors.ts && ts-node src/seed/addPatients.ts && ts-node src/seed/addRecords.ts && ts-node src/seed/addDoctorPatients.ts && ts-node src/seed/addDoctorRecords.ts",
     "start2": "ts-node src/index.ts",
     "dev2": "nodemon --exec ts-node src/index.ts",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"

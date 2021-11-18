@@ -17,7 +17,7 @@ import { DoctorRecord } from './entities/DoctorRecord';
 const main = async () => {
   const conn = await createConnection({
     type: 'postgres',
-    url: 'postgresql://postgres:postgres@localhost:5432/elixir',
+    url: 'postgresql://postgres:postgres@localhost:5432/project-florence',
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, './migrations/*')],

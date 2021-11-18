@@ -1,4 +1,4 @@
-import { isAuthorized } from '../middleware/isAuthorized';
+import { isAuthorized } from '../middlewares/isAuthorized';
 import { Field, ID, ObjectType, UseMiddleware } from 'type-graphql';
 import {
   BaseEntity,
@@ -19,15 +19,15 @@ export class Record extends BaseEntity {
   id: number;
 
   @Field()
-  @Column({ length: 40 })
+  @Column()
   title: string;
 
   @Field()
   @Column()
   category: string;
 
-  @Field(() => String, { nullable: true })
-  @Column({ nullable: true })
+  @Field(() => String)
+  @Column()
   @UseMiddleware(isAuthorized)
   attachment: string;
 

@@ -12,10 +12,10 @@ import { Patient } from './Patient';
 @Entity()
 export class DoctorPatient extends BaseEntity {
   @PrimaryColumn()
-  doctorId: number;
+  doctorId: string;
 
   @PrimaryColumn()
-  patientId: number;
+  patientId: string;
 
   @ManyToOne(() => Doctor, (doctor) => doctor.patientConnection, {
     primary: true,

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Lucien Hildrew",
+    "email": "lhildrew0@patch.com",
+    "password": "123456",
+    "gender": "Female",
+    "blood_group": "AB+"
+  },
+  {
+    "name": "Abey Braferton",
+    "email": "abraferton1@com.com",
+    "password": "123456",
+    "gender": "Male",
+    "blood_group": "A+"
+  },
+  {
+    "name": "Josefina Floyd",
+    "email": "jfloyd2@youku.com",
+    "password": "123456",
+    "gender": "Male",
+    "blood_group": "B-"
+  },
+  {
+    "name": "Debbie Spyer",
+    "email": "dspyer3@dion.ne.jp",
+    "password": "123456",
+    "gender": "Female",
+    "blood_group": "O-"
+  },
+  {
+    "name": "Olenolin Caustic",
+    "email": "ocaustic4@usatoday.com",
+    "password": "123456",
+    "gender": "Male",
+    "blood_group": "A+"
+  },
+  {
+    "name": "Hendrika Bambridge",
+    "email": "hbambridge5@uiuc.edu",
+    "password": "123456",
+    "gender": "Female",
+    "blood_group": "O+"
+  },
+  {
+    "name": "Dionisio MacGillacolm",
+    "email": "dmacgillacolm6@sciencedaily.com",
+    "password": "123456",
+    "gender": "Male",
+    "blood_group": "B+"
+  },
+  {
+    "name": "Fitzgerald Vaar",
+    "email": "fvaar7@cloudflare.com",
+    "password": "123456",
+    "gender": "Male",
+    "blood_group": "AB+"
+  },
+  {
+    "name": "Briggs Bellay",
+    "email": "bbellay8@oaic.gov.au",
+    "password": "123456",
+    "gender": "Female",
+    "blood_group": "A+"
+  },
+  {
+    "name": "Archibald Jeffry",
+    "email": "ajeffry9@nhs.uk",
+    "password": "123456",
+    "gender": "Male",
+    "blood_group": "O-"
+  }
+]
