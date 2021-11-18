@@ -4,12 +4,12 @@ import {
   BaseEntity,
   Column,
   Entity,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Doctor } from './Doctor';
 import { Patient } from './Patient';
+import { DoctorRecord } from './DoctorRecord';
 
 @ObjectType()
 @Entity()
@@ -38,6 +38,6 @@ export class Record extends BaseEntity {
   @ManyToOne(() => Patient, (patient) => patient.records)
   patient: Patient;
 
-  @ManyToMany(() => Doctor, (doctor) => doctor.records)
-  doctors: Doctor[];
+  @OneToMany(() => DoctorRecord, (dp) => dp.record)
+  doctorConnection: Promise<DoctorRecord[]>;
 }

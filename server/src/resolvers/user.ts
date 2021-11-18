@@ -61,12 +61,12 @@ class DoctorInput extends UserInput {
 @Resolver()
 export class UserResolver {
   @Query(() => [Patient])
-  async getPatients() {
+  async patients() {
     return await Patient.find();
   }
 
   @Query(() => [Doctor])
-  async getDoctors() {
+  async doctors() {
     return await Doctor.find();
   }
 

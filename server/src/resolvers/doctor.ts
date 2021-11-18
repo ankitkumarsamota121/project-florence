@@ -27,17 +27,11 @@ class DoctorResponse {
   error?: FieldError;
 }
 
-@ObjectType()
-class DoctorRecordsResponse {
-  @Field(() => [Record])
-  records: Record[];
-}
-
 @Resolver(Doctor)
 export class DoctorResolver {
   @Query(() => [Patient])
   @UseMiddleware(isAuthenticated)
-  async patients(@Ctx() { payload }: MyContext): Promise<Patient[]> {
+  async getPatients(@Ctx() { payload }: MyContext): Promise<Patient[]> {
     const dp = await DoctorPatient.find({
       where: { doctorId: payload!.userId },
       relations: ['patient'],
@@ -102,28 +96,22 @@ export class DoctorResolver {
   /**
    * TODO: getPatientRecords and getRecord
    */
-  // getPatientRecords -> (patientId) => {Basic Record Info of all Records, IsAccessible or Not}
-  @Query(() => DoctorRecordsResponse)
+  @Query(() => [Record])
   @UseMiddleware(isAuthenticated)
   async getPatientRecords(
     @Arg('patientId', () => Int) patientId: number
-    // @Ctx() { payload }: MyContext
-  ): Promise<DoctorRecordsResponse> {
+  ): Promise<Record[]> {
     const records = await Record.find({
       where: { patient: await Patient.findOne({ id: patientId }) },
       select: ['id', 'title', 'category', 'description'],
     });
-    return { records };
+    return records;
   }
 
-  // getRecord -> (recordId) => {Complete Record Info}
   @Query(() => Record)
   @UseMiddleware(isAuthenticated)
   @UseMiddleware(isAuthorized)
-  async getPatientRecord(
-    @Arg('recordId') recordId: number
-    // @Ctx() { payload }: MyContext
-  ) {
+  async getPatientRecord(@Arg('recordId') recordId: number) {
     const record = await Record.findOne({ id: recordId });
     return record;
   }
