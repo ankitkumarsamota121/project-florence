@@ -1,8 +1,8 @@
-import { Entity, Column, OneToMany, ManyToMany } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { ObjectType, Field } from 'type-graphql';
 import { User } from './User';
 import { Record } from './Record';
-import { Doctor } from './Doctor';
+import { DoctorPatient } from './DoctorPatient';
 
 @ObjectType()
 @Entity()
@@ -18,6 +18,6 @@ export class Patient extends User {
   @OneToMany(() => Record, (record) => record.patient)
   records: Record[];
 
-  @ManyToMany(() => Doctor, (doctor) => doctor.patients)
-  doctors: Doctor[];
+  @OneToMany(() => DoctorPatient, (dp) => dp.patient)
+  doctorConnection: Promise<DoctorPatient[]>;
 }

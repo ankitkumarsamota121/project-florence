@@ -10,8 +10,13 @@ export const isAuthorized: MiddlewareFn<MyContext> = async (
   if (!context.payload!.userId || !args.recordId) next();
 
   const record = await Record.findOne({
-    relations: ['doctors'],
     where: { id: args.recordId },
+    join: {
+      alias: 'record',
+      innerJoinAndSelect: {
+        doctorId: 'record.doctors',
+      },
+    },
   });
   if (!record) throw new Error('Record not found!');
 
@@ -20,7 +25,13 @@ export const isAuthorized: MiddlewareFn<MyContext> = async (
   });
   if (!doctor) throw new Error('No doctor found with given ID!');
 
-  const idx = record.doctors.indexOf(doctor);
+  // console.log('Records => ', docs);
+  record.doctors.forEach((d) => {
+    console.log(d.id);
+  });
+  // console.log(doctor);
+  // const idx = record.doctors.indexOf(doctor);
+  const idx = -1;
   if (idx == -1) throw new Error('Not authorized to access the given record!');
 
   return next();

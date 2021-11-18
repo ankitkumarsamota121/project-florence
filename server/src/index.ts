@@ -11,6 +11,7 @@ import { UserResolver } from './resolvers/user';
 import { Patient } from './entities/Patient';
 import { Doctor } from './entities/Doctor';
 import { DoctorResolver } from './resolvers/doctor';
+import { DoctorPatient } from './entities/DoctorPatient';
 
 const main = async () => {
   const conn = await createConnection({
@@ -19,7 +20,7 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Record, Patient, Doctor],
+    entities: [Record, Patient, Doctor, DoctorPatient],
   });
   await conn.runMigrations();
 
