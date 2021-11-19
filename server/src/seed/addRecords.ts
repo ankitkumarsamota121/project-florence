@@ -25,7 +25,7 @@ const main = async () => {
       const idx = Math.floor(Math.random() * 10);
       await Record.create({
         ...r,
-        patient: patients[idx],
+        patient: Promise.resolve(patients[idx]),
       }).save();
     } catch (error) {
       console.log(error);

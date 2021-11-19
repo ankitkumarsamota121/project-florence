@@ -4,3 +4,7 @@ node_modules/
 build/
 tmp/
 temp/
+images/
+
+.env
+project-florence-firebase-adminsdk-s8140-84dd096403.json

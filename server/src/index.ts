@@ -13,6 +13,8 @@ import { Doctor } from './entities/Doctor';
 import { DoctorResolver } from './resolvers/doctor';
 import { DoctorPatient } from './entities/DoctorPatient';
 import { DoctorRecord } from './entities/DoctorRecord';
+import { graphqlUploadExpress } from 'graphql-upload';
+import { PatientResolver } from './resolvers/patient';
 
 const main = async () => {
   const conn = await createConnection({
@@ -28,6 +30,7 @@ const main = async () => {
   // await Post.delete({});
 
   const app = express();
+  app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
   //   const RedisStore = connectRedis(session);
   //   const redis = new Redis(process.env.REDIS_URL);
@@ -59,8 +62,15 @@ const main = async () => {
   //   );
 
   const apolloServer = new ApolloServer({
+    // uploads: false,
     schema: await buildSchema({
-      resolvers: [HelloResolver, RecordResolver, UserResolver, DoctorResolver],
+      resolvers: [
+        HelloResolver,
+        RecordResolver,
+        UserResolver,
+        DoctorResolver,
+        PatientResolver,
+      ],
       validate: false,
     }),
     context: ({ req, res }) => ({

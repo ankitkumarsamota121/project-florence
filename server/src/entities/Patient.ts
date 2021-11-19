@@ -16,7 +16,7 @@ export class Patient extends User {
   blood_group: string;
 
   @OneToMany(() => Record, (record) => record.patient)
-  records: Record[];
+  records: Promise<Record[]>;
 
   @OneToMany(() => DoctorPatient, (dp) => dp.patient)
   doctorConnection: Promise<DoctorPatient[]>;

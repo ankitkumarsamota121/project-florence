@@ -5,7 +5,6 @@ import {
   Arg,
   Ctx,
   Field,
-  // FieldResolver,
   InputType,
   Int,
   Mutation,
@@ -60,7 +59,7 @@ export class RecordResolver {
   ): Promise<Record> {
     const record = await Record.findOne({
       id: id,
-      patient: await Patient.findOne({ where: { id: payload!.userId } }),
+      patient: Patient.findOne({ where: { id: payload!.userId } }),
     });
     if (!record) {
       throw new UserInputError('Not record found with given ID!');
@@ -69,26 +68,62 @@ export class RecordResolver {
     return record;
   }
 
-  @Mutation(() => RecordResponse)
+  // @Mutation(() => Record)
+  // @UseMiddleware(isAuthenticated)
+  // async createPatientRecord(
+  //   @Arg('input') input: RecordInput,
+  //   @Arg('file', () => GraphQLUpload)
+  //   { createReadStream, filename }: FileUpload,
+  //   @Ctx() { payload }: MyContext
+  // ): Promise<Record> {
+  //   const patient = await Patient.findOne({
+  //     where: { id: payload!.userId },
+  //   });
+  //   if (!patient) {
+  //     throw new UserInputError('No patient found with given ID!');
+  //   }
+
+  //   const a = filename.split('.');
+  //   const idx = a.length - 1;
+  //   const ext = a[idx];
+  //   const uuidFilename = uuidv4() + ext;
+  //   return new Promise(async (resolve, reject) =>
+  //     createReadStream()
+  //       .pipe(createWriteStream(__dirname + `/../../files/${uuidFilename}`))
+  //       .on('finish', async () => {
+  //         const fileUrl = `http://localhost:4000/files/${uuidFilename}`;
+  //         const record = await Record.create(input);
+
+  //         record.patient = patient;
+  //         record.attachment = fileUrl;
+  //         await Record.save(record);
+  //         resolve(record);
+  //       })
+  //       .on('error', () =>
+  //         reject(new ApolloError('Some error occured! Please try again later.'))
+  //       )
+  //   );
+  // }
+
+  @Mutation(() => Record)
   @UseMiddleware(isAuthenticated)
   async createPatientRecord(
     @Arg('input') input: RecordInput,
     @Ctx() { payload }: MyContext
-  ): Promise<RecordResponse> {
-    const record = await Record.create(input);
-    const patient = await Patient.findOne({ where: { id: payload!.userId } });
+  ): Promise<Record> {
+    const patient = await Patient.findOne({
+      where: { id: payload!.userId },
+    });
     if (!patient) {
-      return {
-        error: new FieldError('user', 'User not found!'),
-      };
+      throw new UserInputError('No patient found with given ID!');
     }
 
-    record.patient = patient;
+    const record = await Record.create(input);
+
+    record.patient = Promise.resolve(patient);
     await Record.save(record);
 
-    return {
-      record,
-    };
+    return record;
   }
 
   /**
@@ -106,7 +141,7 @@ export class RecordResolver {
   ): Promise<RecordResponse> {
     const record = await Record.findOne({
       id: id,
-      patient: await Patient.findOne({ where: { id: payload!.userId } }),
+      patient: Patient.findOne({ where: { id: payload!.userId } }),
     });
 
     if (!record)
@@ -142,7 +177,7 @@ export class RecordResolver {
 
     await Record.delete({
       id,
-      patient: await Patient.findOne({ where: { id: payload!.userId } }),
+      patient: Patient.findOne({ where: { id: payload!.userId } }),
     });
     return true;
   }

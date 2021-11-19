@@ -26,8 +26,8 @@ export class Record extends BaseEntity {
   @Column()
   category: string;
 
-  @Field(() => String)
-  @Column()
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
   @UseMiddleware(isAuthorized)
   attachment: string;
 
@@ -36,7 +36,7 @@ export class Record extends BaseEntity {
   description: string;
 
   @ManyToOne(() => Patient, (patient) => patient.records)
-  patient: Patient;
+  patient: Promise<Patient>;
 
   @OneToMany(() => DoctorRecord, (dp) => dp.record)
   doctorConnection: Promise<DoctorRecord[]>;
