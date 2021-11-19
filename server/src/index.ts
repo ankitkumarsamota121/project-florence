@@ -15,6 +15,8 @@ import { DoctorPatient } from './entities/DoctorPatient';
 import { DoctorRecord } from './entities/DoctorRecord';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { PatientResolver } from './resolvers/patient';
+import { ConsentRequest } from './entities/ConsentRequest';
+import { ConsentRequestResolver } from './resolvers/consentRequest';
 
 const main = async () => {
   const conn = await createConnection({
@@ -23,7 +25,14 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Record, Patient, Doctor, DoctorPatient, DoctorRecord],
+    entities: [
+      Record,
+      Patient,
+      Doctor,
+      DoctorPatient,
+      DoctorRecord,
+      ConsentRequest,
+    ],
   });
   await conn.runMigrations();
 
@@ -70,6 +79,7 @@ const main = async () => {
         UserResolver,
         DoctorResolver,
         PatientResolver,
+        ConsentRequestResolver,
       ],
       validate: false,
     }),

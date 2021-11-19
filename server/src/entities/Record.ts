@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Patient } from './Patient';
 import { DoctorRecord } from './DoctorRecord';
+import { ConsentRequest } from './ConsentRequest';
 
 @ObjectType()
 @Entity()
@@ -40,4 +41,7 @@ export class Record extends BaseEntity {
 
   @OneToMany(() => DoctorRecord, (dp) => dp.record)
   doctorConnection: Promise<DoctorRecord[]>;
+
+  @OneToMany(() => ConsentRequest, (cr) => cr.record)
+  requests: Promise<ConsentRequest[]>;
 }

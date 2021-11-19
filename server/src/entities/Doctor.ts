@@ -3,6 +3,7 @@ import { ObjectType, Field } from 'type-graphql';
 import { User } from './User';
 import { DoctorPatient } from './DoctorPatient';
 import { DoctorRecord } from './DoctorRecord';
+import { ConsentRequest } from './ConsentRequest';
 
 @ObjectType()
 @Entity()
@@ -24,4 +25,7 @@ export class Doctor extends User {
 
   @OneToMany(() => DoctorRecord, (dp) => dp.doctor)
   recordConnection: Promise<DoctorRecord[]>;
+
+  @OneToMany(() => ConsentRequest, (cr) => cr.doctor)
+  requests: Promise<ConsentRequest[]>;
 }

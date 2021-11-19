@@ -1,4 +1,11 @@
-import { Arg, Ctx, Mutation, Resolver, UseMiddleware } from 'type-graphql';
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from 'type-graphql';
 
 // Types
 import { MyContext } from '../types';
@@ -14,9 +21,22 @@ import { isAuthenticated } from '../middlewares/isAuthenticated';
 
 // Utils
 import { UserInputError } from 'apollo-server-express';
+import { ConsentRequest } from '../entities/ConsentRequest';
 
 @Resolver(Patient)
 export class PatientResolver {
+  @Query(() => [ConsentRequest])
+  @UseMiddleware(isAuthenticated)
+  async getConsentRequests(@Ctx() { payload }: MyContext) {
+    const crs = await ConsentRequest.find({
+      relations: ['doctor', 'record'],
+      where: {
+        patient: Patient.findOne(payload!.userId),
+      },
+    });
+    return crs;
+  }
+
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
   async grantAccess(
