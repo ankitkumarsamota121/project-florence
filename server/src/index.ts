@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
@@ -44,12 +45,13 @@ const main = async () => {
   //   const RedisStore = connectRedis(session);
   //   const redis = new Redis(process.env.REDIS_URL);
   //   app.set('trust proxy', 1);
-  //   app.use(
-  //     cors({
-  //       origin: process.env.CORS_ORIGIN,
-  //       credentials: true,
-  //     })
-  //   );
+  // app.use(
+  //   cors({
+  //     origin: 'http://localhost:3000/',
+  //     credentials: true,
+  //   })
+  // );
+  app.use(cors());
   //   app.use(
   //     session({
   //       name: COOKIE_NAME,
