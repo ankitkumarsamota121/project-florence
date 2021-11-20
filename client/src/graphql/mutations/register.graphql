@@ -1,0 +1,5 @@
+mutation PatientRegister($input: PatientInput!) {
+  patientRegister(input: $input) {
+    accessToken
+  }
+}
