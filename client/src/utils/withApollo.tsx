@@ -5,8 +5,8 @@ import {
   InMemoryCache,
 } from '@apollo/client';
 import nextWithApollo from 'next-with-apollo';
-// import { makeVar } from '@apollo/client';
-// export const token = makeVar(localStorage.getItem('token'));
+import { makeVar } from '@apollo/client';
+export const token = makeVar(localStorage.getItem('token'));
 
 export const withApollo = nextWithApollo(
   ({ initialState, headers }) => {
@@ -17,20 +17,20 @@ export const withApollo = nextWithApollo(
       }),
       headers: {
         ...(headers as Record<string, string>),
-        // authorization: `bearer ${token}`,
+        authorization: `bearer ${token}`,
       },
       cache: new InMemoryCache({
-        // typePolicies: {
-        //   Query: {
-        //     fields: {
-        //       token: {
-        //         read() {
-        //           return token();
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
+        typePolicies: {
+          Query: {
+            fields: {
+              token: {
+                read() {
+                  return token();
+                },
+              },
+            },
+          },
+        },
       }).restore(initialState || {}),
     });
   },

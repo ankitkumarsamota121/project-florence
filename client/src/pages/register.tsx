@@ -4,9 +4,9 @@ import { Box, Button, FormControl, FormLabel, Input } from '@chakra-ui/react';
 import Wrapper from '../components/Wrapper';
 import InputField from '../components/InputField';
 
-interface registerProps {}
+interface RegisterProps {}
 
-const Register: React.FC<registerProps> = () => {
+const Register: React.FC<RegisterProps> = () => {
   return (
     <Wrapper variant='small'>
       <Formik

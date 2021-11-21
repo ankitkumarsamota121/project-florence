@@ -1,4 +1,4 @@
 query Hello {
   hello
-  token @client
+  # token @client
 }
