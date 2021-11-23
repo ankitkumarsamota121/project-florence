@@ -1,38 +1,88 @@
-import { gql, useQuery } from '@apollo/client';
-import { Button, Flex, Link, Spacer } from '@chakra-ui/react';
+import { useQuery } from '@apollo/client';
+import { ChevronDownIcon } from '@chakra-ui/icons';
+import {
+  Box,
+  Button,
+  Flex,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Spacer,
+} from '@chakra-ui/react';
+import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import NextLink from 'next/link';
-import React from 'react';
-// import { tokenVar } from '../utils/cache';
+import React, { useEffect, useState } from 'react';
+import { useMeQuery } from '../generated/graphql';
+import { cache } from '../utils/cache';
 import { getToken, removeToken } from '../utils/tokenManager';
 
 interface NavbarProps {}
 
 const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
+  const [loading, setLoading] = useState(true);
+
   const { data } = useQuery(getToken);
   const router = useRouter();
 
-  const logoutHandler = () => {
+  const { data: meData } = useMeQuery();
+  let userInfo = get(meData, 'me', null);
+
+  const logoutHandler = async () => {
     removeToken();
     router.push('/');
   };
 
+  useEffect(() => {
+    setLoading(false);
+  }, [userInfo]);
+
   return (
-    <Flex backgroundColor='grey' py={4}>
+    <Flex backgroundColor='lightblue' py={4}>
       <Spacer />
       {data.token ? (
-        <NextLink href='/'>
-          <Button mr={4} onClick={logoutHandler}>
-            Logout
-          </Button>
-        </NextLink>
+        <Menu>
+          <MenuButton
+            as={Button}
+            mr={4}
+            rightIcon={<ChevronDownIcon />}
+            isLoading={loading}
+          >
+            {userInfo?.user.name}
+          </MenuButton>
+          <MenuList>
+            <MenuItem>
+              <NextLink href={`/profile/${userInfo?.userType}`}>
+                <Box w='100%'>Profile</Box>
+              </NextLink>
+            </MenuItem>
+            <MenuItem>
+              <NextLink href='/'>
+                <Box w='100%' onClick={logoutHandler}>
+                  Logout
+                </Box>
+              </NextLink>
+            </MenuItem>
+          </MenuList>
+        </Menu>
       ) : (
         <>
-          <NextLink href='/register'>
-            <Link mr={4}>Register</Link>
-          </NextLink>
+          <Menu>
+            <MenuButton as={Button} mr={4} rightIcon={<ChevronDownIcon />}>
+              Register
+            </MenuButton>
+            <MenuList>
+              <MenuItem>
+                <NextLink href='/register/patient'>Register Patient</NextLink>
+              </MenuItem>
+              <MenuItem>
+                <NextLink href='/register/doctor'>Register Doctor</NextLink>
+              </MenuItem>
+            </MenuList>
+          </Menu>
           <NextLink href='/login'>
-            <Link mr={4}>Login</Link>
+            <Button mr={4}>Login</Button>
           </NextLink>
         </>
       )}

@@ -1,0 +1,21 @@
+query Me {
+  me {
+    user {
+      ... on Patient {
+        id
+        name
+        email
+        gender
+        blood_group
+      }
+      ... on Doctor {
+        name
+        id
+        specialities
+        email
+        designation
+      }
+    }
+    userType
+  }
+}

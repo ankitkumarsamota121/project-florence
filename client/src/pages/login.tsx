@@ -9,20 +9,21 @@ import { useRouter } from 'next/dist/client/router';
 import { useQuery } from '@apollo/client';
 import { withApollo } from '../utils/withApollo';
 import { getDataFromTree } from '@apollo/client/react/ssr';
+import { cache } from '../utils/cache';
 
 interface LoginProps {}
 
 const Login: React.FC<LoginProps> = () => {
   const router = useRouter();
-  const [login] = useLoginMutation();
   const {
     data: { token },
   } = useQuery(getToken);
 
   useEffect(() => {
-    console.log(token);
     if (token) router.push('/');
   }, [token]);
+
+  const [login] = useLoginMutation();
 
   return (
     <Wrapper variant='small'>

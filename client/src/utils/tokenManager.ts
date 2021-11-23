@@ -1,8 +1,9 @@
 import { gql, makeVar } from '@apollo/client';
-// import { tokenVar } from './cache';
+import { cache } from './cache';
 export const tokenVar = makeVar('');
 
 export const setToken = (token: string) => {
+  cache.evict({ id: 'ROOT_QUERY', fieldName: 'me' });
   localStorage.setItem('token', token);
   tokenVar(token);
 };

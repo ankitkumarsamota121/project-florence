@@ -3,3 +3,9 @@ mutation PatientRegister($input: PatientInput!) {
     accessToken
   }
 }
+
+mutation DoctorRegister($input: DoctorInput!) {
+  doctorRegister(input: $input) {
+    accessToken
+  }
+}

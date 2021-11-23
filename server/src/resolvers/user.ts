@@ -8,6 +8,7 @@ import {
   UseMiddleware,
   Ctx,
   InputType,
+  createUnionType,
 } from 'type-graphql';
 import argon2 from 'argon2';
 import { sign } from 'jsonwebtoken';
@@ -28,6 +29,21 @@ class UserResponse {
   @Field(() => String)
   accessToken: string;
 }
+
+const UserUnion = createUnionType({
+  name: 'User', // the name of the GraphQL union
+  types: () => [Patient, Doctor] as const, // function that returns tuple of object types classes
+});
+@ObjectType()
+class MeResponse {
+  @Field(() => UserUnion)
+  user: Patient | Doctor;
+
+  @Field()
+  userType: string;
+}
+
+
 
 @InputType()
 abstract class UserInput {
@@ -52,8 +68,8 @@ class PatientInput extends UserInput {
 
 @InputType()
 class DoctorInput extends UserInput {
-  @Field()
-  experience: number;
+  // @Field()
+  // experience: number;
 
   @Field()
   specialities: string;
@@ -74,10 +90,16 @@ export class UserResolver {
     return await Doctor.find();
   }
 
-  @Query(() => String)
+  @Query(() => MeResponse)
   @UseMiddleware(isAuthenticated)
   async me(@Ctx() { payload }: MyContext) {
-    return `Your user id : ${payload!.userId}`;
+    const patient = await Patient.findOne(payload!.userId);
+    if (patient) {
+      return { user: patient, userType: 'patient' };
+    }
+
+    const doctor = await Doctor.findOne(payload!.userId);
+    return { user: doctor, userType: 'doctor' };
   }
 
   @Mutation(() => UserResponse)

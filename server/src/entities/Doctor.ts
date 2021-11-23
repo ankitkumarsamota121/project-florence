@@ -8,9 +8,9 @@ import { ConsentRequest } from './ConsentRequest';
 @ObjectType()
 @Entity()
 export class Doctor extends User {
-  @Field()
-  @Column()
-  experience: number;
+  // @Field()
+  // @Column()
+  // experience: number;
 
   @Field()
   @Column()

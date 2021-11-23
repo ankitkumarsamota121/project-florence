@@ -38,7 +38,6 @@ export type Doctor = {
   __typename?: 'Doctor';
   designation: Scalars['String'];
   email: Scalars['String'];
-  experience: Scalars['Float'];
   id: Scalars['String'];
   name: Scalars['String'];
   specialities: Scalars['String'];
@@ -47,10 +46,15 @@ export type Doctor = {
 export type DoctorInput = {
   designation: Scalars['String'];
   email: Scalars['String'];
-  experience: Scalars['Float'];
   name: Scalars['String'];
   password: Scalars['String'];
   specialities: Scalars['String'];
+};
+
+export type MeResponse = {
+  __typename?: 'MeResponse';
+  user: User;
+  userType: Scalars['String'];
 };
 
 export type Mutation = {
@@ -169,7 +173,7 @@ export type Query = {
   getPatientRecords: Array<BasicRecordResponse>;
   getPatients: Array<Patient>;
   hello: Scalars['String'];
-  me: Scalars['String'];
+  me: MeResponse;
   patients: Array<Patient>;
   record?: Maybe<Record>;
   records: Array<Record>;
@@ -205,6 +209,8 @@ export type RecordInput = {
   title: Scalars['String'];
 };
 
+export type User = Doctor | Patient;
+
 export type UserResponse = {
   __typename?: 'UserResponse';
   accessToken: Scalars['String'];
@@ -226,10 +232,22 @@ export type PatientRegisterMutationVariables = Exact<{
 
 export type PatientRegisterMutation = { __typename?: 'Mutation', patientRegister: { __typename?: 'UserResponse', accessToken: string } };
 
+export type DoctorRegisterMutationVariables = Exact<{
+  input: DoctorInput;
+}>;
+
+
+export type DoctorRegisterMutation = { __typename?: 'Mutation', doctorRegister: { __typename?: 'UserResponse', accessToken: string } };
+
 export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type HelloQuery = { __typename?: 'Query', hello: string };
+
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'MeResponse', userType: string, user: { __typename?: 'Doctor', name: string, id: string, specialities: string, email: string, designation: string } | { __typename?: 'Patient', id: string, name: string, email: string, gender: string, blood_group: string } } };
 
 
 export const LoginDocument = gql`
@@ -300,6 +318,39 @@ export function usePatientRegisterMutation(baseOptions?: Apollo.MutationHookOpti
 export type PatientRegisterMutationHookResult = ReturnType<typeof usePatientRegisterMutation>;
 export type PatientRegisterMutationResult = Apollo.MutationResult<PatientRegisterMutation>;
 export type PatientRegisterMutationOptions = Apollo.BaseMutationOptions<PatientRegisterMutation, PatientRegisterMutationVariables>;
+export const DoctorRegisterDocument = gql`
+    mutation DoctorRegister($input: DoctorInput!) {
+  doctorRegister(input: $input) {
+    accessToken
+  }
+}
+    `;
+export type DoctorRegisterMutationFn = Apollo.MutationFunction<DoctorRegisterMutation, DoctorRegisterMutationVariables>;
+
+/**
+ * __useDoctorRegisterMutation__
+ *
+ * To run a mutation, you first call `useDoctorRegisterMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDoctorRegisterMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [doctorRegisterMutation, { data, loading, error }] = useDoctorRegisterMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useDoctorRegisterMutation(baseOptions?: Apollo.MutationHookOptions<DoctorRegisterMutation, DoctorRegisterMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DoctorRegisterMutation, DoctorRegisterMutationVariables>(DoctorRegisterDocument, options);
+      }
+export type DoctorRegisterMutationHookResult = ReturnType<typeof useDoctorRegisterMutation>;
+export type DoctorRegisterMutationResult = Apollo.MutationResult<DoctorRegisterMutation>;
+export type DoctorRegisterMutationOptions = Apollo.BaseMutationOptions<DoctorRegisterMutation, DoctorRegisterMutationVariables>;
 export const HelloDocument = gql`
     query Hello {
   hello
@@ -332,3 +383,53 @@ export function useHelloLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Hell
 export type HelloQueryHookResult = ReturnType<typeof useHelloQuery>;
 export type HelloLazyQueryHookResult = ReturnType<typeof useHelloLazyQuery>;
 export type HelloQueryResult = Apollo.QueryResult<HelloQuery, HelloQueryVariables>;
+export const MeDocument = gql`
+    query Me {
+  me {
+    user {
+      ... on Patient {
+        id
+        name
+        email
+        gender
+        blood_group
+      }
+      ... on Doctor {
+        name
+        id
+        specialities
+        email
+        designation
+      }
+    }
+    userType
+  }
+}
+    `;
+
+/**
+ * __useMeQuery__
+ *
+ * To run a query within a React component, call `useMeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+      }
+export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+        }
+export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
+export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
+export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
