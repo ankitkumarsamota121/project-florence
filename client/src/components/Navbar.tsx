@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   Box,
@@ -15,19 +15,20 @@ import { useRouter } from 'next/dist/client/router';
 import NextLink from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useMeQuery } from '../generated/graphql';
-import { cache } from '../utils/cache';
-import { getToken, removeToken } from '../utils/tokenManager';
+import { removeToken, tokenVar } from '../utils/tokenManager';
 
 interface NavbarProps {}
 
 const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
   const [loading, setLoading] = useState(true);
 
-  const { data } = useQuery(getToken);
   const router = useRouter();
+  const token = useReactiveVar(tokenVar);
 
-  const { data: meData } = useMeQuery();
-  let userInfo = get(meData, 'me', null);
+  const { data: meData, refetch: meRefetch } = useMeQuery({
+    nextFetchPolicy: 'cache-first',
+  });
+  let userInfo = get(meData, 'me', {} as any);
 
   const logoutHandler = async () => {
     removeToken();
@@ -35,13 +36,19 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
   };
 
   useEffect(() => {
-    setLoading(false);
-  }, [userInfo]);
+    setLoading(true);
+    const fn = async () => {
+      const { data: nmeData, error } = await meRefetch();
+      userInfo = get(nmeData, 'me', {} as any);
+      setLoading(false);
+    };
+    if (token) fn();
+  }, [token]);
 
   return (
     <Flex backgroundColor='lightblue' py={4}>
       <Spacer />
-      {data.token ? (
+      {token ? (
         <Menu>
           <MenuButton
             as={Button}
@@ -49,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
             rightIcon={<ChevronDownIcon />}
             isLoading={loading}
           >
-            {userInfo?.user.name}
+            {userInfo?.user?.name}
           </MenuButton>
           <MenuList>
             <MenuItem>

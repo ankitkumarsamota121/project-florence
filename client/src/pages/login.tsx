@@ -1,23 +1,18 @@
 import React, { useEffect } from 'react';
 import { Formik, Form } from 'formik';
-import { Box, Button, FormControl, FormLabel, Input } from '@chakra-ui/react';
+import { Box, Button } from '@chakra-ui/react';
 import Wrapper from '../components/Wrapper';
 import InputField from '../components/InputField';
 import { useLoginMutation } from '../generated/graphql';
-import { getToken, setToken } from '../utils/tokenManager';
+import { setToken, tokenVar } from '../utils/tokenManager';
 import { useRouter } from 'next/dist/client/router';
-import { useQuery } from '@apollo/client';
-import { withApollo } from '../utils/withApollo';
-import { getDataFromTree } from '@apollo/client/react/ssr';
-import { cache } from '../utils/cache';
+import { useReactiveVar } from '@apollo/client';
 
 interface LoginProps {}
 
 const Login: React.FC<LoginProps> = () => {
   const router = useRouter();
-  const {
-    data: { token },
-  } = useQuery(getToken);
+  const token = useReactiveVar(tokenVar);
 
   useEffect(() => {
     if (token) router.push('/');

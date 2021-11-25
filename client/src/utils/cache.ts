@@ -1,5 +1,6 @@
-import { InMemoryCache } from '@apollo/client';
+import { InMemoryCache, makeVar } from '@apollo/client';
 import { tokenVar } from './tokenManager';
+
 
 export const cache = new InMemoryCache({
   typePolicies: {

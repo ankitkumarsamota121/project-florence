@@ -8,11 +8,13 @@ export const setToken = (token: string) => {
   tokenVar(token);
 };
 
-export const getToken = gql`
-  query Hello {
-    token @client
-  }
-`;
+// export const getToken = gql`
+//   query Hello {
+//     token @client
+//   }
+// `;
+
+// To get a token use => useReactiveVar(tokenVar);
 
 export const removeToken = () => {
   tokenVar('');
