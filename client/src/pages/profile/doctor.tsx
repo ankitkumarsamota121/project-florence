@@ -1,27 +1,26 @@
-import React, { useEffect } from 'react';
 import {
-  Box,
-  Button,
   Container,
   Grid,
   GridItem,
   Heading,
-  Spinner,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
+  Box,
+  Button,
   Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  Spinner,
 } from '@chakra-ui/react';
-import RecordsTable from '../../components/RecordsTable';
-import UserInfoTable from '../../components/UserInfoTable';
-import { useMeQuery } from '../../generated/graphql';
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
+import React, { useEffect } from 'react';
+import UserInfoTable from '../../components/UserInfoTable';
+import { useMeQuery } from '../../generated/graphql';
 
-interface PatientProfileProps {}
+interface DoctorProfileProps {}
 
-const PatientProfile = (props: PatientProfileProps) => {
+const DoctorProfile = (props: DoctorProfileProps) => {
   const { data: meData, loading: meLoading } = useMeQuery();
   const userInfo = get(meData, 'me', null);
   const router = useRouter();
@@ -31,6 +30,7 @@ const PatientProfile = (props: PatientProfileProps) => {
     const path = `/profile/${userInfo?.userType.toLowerCase()}`;
     if (curr !== path) router.push('/');
   }, [meLoading]);
+
   return (
     <Container maxW='container.xl'>
       <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
@@ -60,20 +60,21 @@ const PatientProfile = (props: PatientProfileProps) => {
         <GridItem colSpan={4}>
           <Tabs isFitted colorScheme='teal'>
             <TabList>
-              <Tab _focus={{ outline: 'none' }}>Records</Tab>
-              <Tab _focus={{ outline: 'none' }}>Notifications</Tab>
+              <Tab _focus={{ outline: 'none' }}>My Patients</Tab>
+              {/* <Tab _focus={{ outline: 'none' }}>Notifications</Tab> */}
             </TabList>
 
             <TabPanels>
               <TabPanel>
-                <RecordsTable />
-                <Button colorScheme='teal' mt={4} width='200px' height='50px'>
+                {/* <RecordsTable /> */}
+                {/* <Button colorScheme='teal' mt={4} width='200px' height='50px'>
                   Add Record
-                </Button>
+                </Button> */}
+                <h1>Patients</h1>
               </TabPanel>
-              <TabPanel>
+              {/* <TabPanel>
                 <h1>Notifications</h1>
-              </TabPanel>
+              </TabPanel> */}
             </TabPanels>
           </Tabs>
         </GridItem>
@@ -82,4 +83,4 @@ const PatientProfile = (props: PatientProfileProps) => {
   );
 };
 
-export default PatientProfile;
+export default DoctorProfile;
