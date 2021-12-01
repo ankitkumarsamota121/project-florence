@@ -3,6 +3,8 @@ import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
+import { ApolloServerPluginLandingPageDisabled } from 'apollo-server-core';
+
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
 import { Record } from './entities/Record';
@@ -40,7 +42,10 @@ const main = async () => {
   // await Post.delete({});
 
   const app = express();
+  app.use(cors());
+
   app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
   //   const RedisStore = connectRedis(session);
   //   const redis = new Redis(process.env.REDIS_URL);
@@ -51,7 +56,6 @@ const main = async () => {
   //     credentials: true,
   //   })
   // );
-  app.use(cors());
   //   app.use(
   //     session({
   //       name: COOKIE_NAME,
@@ -91,6 +95,7 @@ const main = async () => {
       //   userLoader: createUserLoader(),
       //   updootLoader: createUpdootLoader(),
     }),
+    plugins: [ApolloServerPluginLandingPageDisabled()],
   });
 
   await apolloServer.start();

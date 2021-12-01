@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import NextLink from 'next/link';
 import {
   Box,
   Button,
@@ -67,9 +68,11 @@ const PatientProfile = (props: PatientProfileProps) => {
             <TabPanels>
               <TabPanel>
                 <RecordsTable />
-                <Button colorScheme='teal' mt={4} width='200px' height='50px'>
-                  Add Record
-                </Button>
+                <NextLink href='/addRecord/patient'>
+                  <Button colorScheme='teal' mt={4} width='200px' height='50px'>
+                    Add Record
+                  </Button>
+                </NextLink>
               </TabPanel>
               <TabPanel>
                 <h1>Notifications</h1>

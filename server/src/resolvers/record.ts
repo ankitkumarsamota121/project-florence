@@ -16,6 +16,10 @@ import {
 import { Record } from '../entities/Record';
 import { FieldError } from '../utils/FieldError';
 import { UserInputError } from 'apollo-server-express';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { createWriteStream } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 @InputType()
 class RecordInput {
@@ -105,27 +109,6 @@ export class RecordResolver {
   //   );
   // }
 
-  @Mutation(() => Record)
-  @UseMiddleware(isAuthenticated)
-  async createPatientRecord(
-    @Arg('input') input: RecordInput,
-    @Ctx() { payload }: MyContext
-  ): Promise<Record> {
-    const patient = await Patient.findOne({
-      where: { id: payload!.userId },
-    });
-    if (!patient) {
-      throw new UserInputError('No patient found with given ID!');
-    }
-
-    const record = await Record.create(input);
-
-    record.patient = Promise.resolve(patient);
-    await Record.save(record);
-
-    return record;
-  }
-
   /**
    * TODO: Create a Mutation for the doctor to add records
    */
@@ -180,5 +163,56 @@ export class RecordResolver {
       patient: Patient.findOne({ where: { id: payload!.userId } }),
     });
     return true;
+  }
+
+  @Mutation(() => String)
+  async singleUpload(
+    @Arg('file', () => GraphQLUpload)
+    { createReadStream, filename }: FileUpload
+  ) {
+    const a = filename.split('.');
+    const idx = a.length - 1;
+    const ext = a[idx];
+    const newFileName = uuidv4() + '.' + ext;
+    const filePath = __dirname + `/../../uploads/${newFileName}`;
+
+    return new Promise(async (resolve, reject) =>
+      createReadStream()
+        .pipe(createWriteStream(filePath))
+        .on('finish', () => resolve(newFileName))
+        .on('error', () => reject(''))
+    );
+  }
+
+  @Mutation(() => Boolean)
+  async deleteFile(@Arg('filename') filename: string) {
+    const filePath = __dirname + `/../../uploads/${filename}`;
+    try {
+      fs.unlinkSync(filePath);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  @Mutation(() => Record)
+  @UseMiddleware(isAuthenticated)
+  async createPatientRecord(
+    @Arg('input') input: RecordInput,
+    @Ctx() { payload }: MyContext
+  ): Promise<Record> {
+    const patient = await Patient.findOne({
+      where: { id: payload!.userId },
+    });
+    if (!patient) {
+      throw new UserInputError('No patient found with given ID!');
+    }
+
+    const record = await Record.create(input);
+
+    record.patient = Promise.resolve(patient);
+    await Record.save(record);
+
+    return record;
   }
 }
