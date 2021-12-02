@@ -4,10 +4,10 @@ import Navbar from '../components/Navbar';
 import { ApolloClient, ApolloProvider, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { cache } from '../utils/cache';
-// import validateToken from '../utils/validateToken';
-import { setToken, tokenVar } from '../utils/tokenManager';
-import { validate } from 'graphql';
+import { tokenVar } from '../utils/tokenManager';
 import validateToken from '../utils/validateToken';
+import { from } from 'apollo-boost';
+
 // import { useEffect } from 'react';
 
 const httpLink = createHttpLink({
@@ -24,6 +24,17 @@ const authLink = setContext((_, { headers }) => {
     },
   };
 });
+
+// const errorLink = onError(({ graphQLErrors, networkError }) => {
+//   if (graphQLErrors)
+//     graphQLErrors.forEach(({ message, locations, path }) =>
+//       console.log(
+//         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+//       )
+//     );
+
+//   if (networkError) console.log(`[Network error]: ${networkError}`);
+// });
 
 const client = new ApolloClient({
   connectToDevTools: true,

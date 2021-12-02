@@ -1,0 +1,22 @@
+mutation CreateRecord(
+  $userType: String!
+  $attachmentId: Int!
+  $category: String!
+  $description: String!
+  $title: String!
+  $patientId: String
+) {
+  createRecord(
+    userType: $userType
+    attachmentId: $attachmentId
+    category: $category
+    description: $description
+    title: $title
+    patientId: $patientId
+  ) {
+    title
+    id
+    category
+    description
+  }
+}

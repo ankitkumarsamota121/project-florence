@@ -1,5 +1,4 @@
-import { isAuthorized } from '../middlewares/isAuthorized';
-import { Field, ID, ObjectType, UseMiddleware } from 'type-graphql';
+import { Field, ID, ObjectType } from 'type-graphql';
 import {
   BaseEntity,
   Column,
@@ -11,6 +10,7 @@ import {
 import { Patient } from './Patient';
 import { DoctorRecord } from './DoctorRecord';
 import { ConsentRequest } from './ConsentRequest';
+import { Attachment } from './Attachment';
 
 @ObjectType()
 @Entity()
@@ -27,14 +27,17 @@ export class Record extends BaseEntity {
   @Column()
   category: string;
 
-  @Field(() => String, { nullable: true })
-  @Column({ nullable: true })
-  @UseMiddleware(isAuthorized)
-  attachment: string;
+  // @Field(() => String, { nullable: true })
+  // @Column({ nullable: true })
+  // @UseMiddleware(isAuthorized)
+  // attachment: string;
 
   @Field()
   @Column()
   description: string;
+
+  @OneToMany(() => Attachment, (attachment) => attachment.record)
+  attachments: Promise<Attachment[]>;
 
   @ManyToOne(() => Patient, (patient) => patient.records)
   patient: Promise<Patient>;

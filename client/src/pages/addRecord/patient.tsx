@@ -10,42 +10,51 @@ import {
   FormLabel,
   Input,
 } from '@chakra-ui/react';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import InputField from '../../components/InputField';
 import SelectField from '../../components/SelectField';
 import Wrapper from '../../components/Wrapper';
-import { useSingleUploadMutation } from '../../generated/graphql';
+import {
+  useCreateRecordMutation,
+  useMeQuery,
+  useSingleUploadMutation,
+} from '../../generated/graphql';
 import { setToken } from '../../utils/tokenManager';
+import { get } from 'lodash';
 
 interface PatientRecordProps {}
 
 const PatientRecord = (props: PatientRecordProps) => {
   const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState('');
+  const [createRecord] = useCreateRecordMutation();
+
+  const { data: meData } = useMeQuery({
+    nextFetchPolicy: 'cache-first',
+  });
+  let userInfo = get(meData, 'me', null);
 
   const recordCategories = ['AB', 'BCD', 'ED'];
 
-  const uploadFileHandler = async (e: any) => {
-    // const file = e.target.files[0];
-    // console.log(file);
-    // const formData = new FormData();
-    // formData.append(
-    //   'operations',
-    //   '{ "query": "mutation ($file: Upload!) { singleUpload(file: $file) }", "variables": { "file": null } }'
-    // );
-    // formData.append('map', '{ "0": ["variables.file"] }');
-    // formData.append('0', file);
-    // setUploading(true);
-    // try {
-    //   const url = 'http://localhost:4000';
-    //   const { data } = await axios.post(`${url}/graphql`, formData);
-    //   console.log(data);
-    //   setFile(data);
-    //   setUploading(false);
-    // } catch (error) {
-    //   console.error(error);
-    //   setUploading(false);
-    // }
+  const uploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append(
+      'operations',
+      '{ "query": "mutation ($file: Upload!) { singleUpload(file: $file) }", "variables": { "file": null } }'
+    );
+    formData.append('map', '{ "0": ["variables.file"] }');
+    formData.append('0', file);
+    setUploading(true);
+    try {
+      const url = 'http://localhost:4000';
+      const {
+        data: { data },
+      } = await axios.post(`${url}/graphql`, formData);
+      setUploading(false);
+      return data?.singleUpload;
+    } catch (error) {
+      console.error(error);
+      setUploading(false);
+    }
   };
 
   return (
@@ -55,38 +64,32 @@ const PatientRecord = (props: PatientRecordProps) => {
           title: '',
           description: '',
           category: '',
-          attachment: '',
         }}
         onSubmit={async (values) => {
           // 1. Upload File
           const attachmentRef = document.getElementById(
             'attachment'
           ) as HTMLInputElement;
-          if (attachmentRef && attachmentRef.files) {
-            const file = attachmentRef.files[0];
-            console.log(file);
-            const formData = new FormData();
-            formData.append(
-              'operations',
-              '{ "query": "mutation ($file: Upload!) { singleUpload(file: $file) }", "variables": { "file": null } }'
-            );
-            formData.append('map', '{ "0": ["variables.file"] }');
-            formData.append('0', file);
-            setUploading(true);
-            try {
-              const url = 'http://localhost:4000';
-              const { data } = await axios.post(`${url}/graphql`, formData);
-              console.log(data);
-
-              setFile(data);
-              setUploading(false);
-            } catch (error) {
-              console.error(error);
-              setUploading(false);
-            }
+          if (!attachmentRef || !attachmentRef.files) {
+            console.log('SOME ERROR OCCURED!!!');
+            return;
           }
 
-          // 2. Everything Else
+          const attachmentId = await uploadFile(attachmentRef.files[0]);
+          try {
+            const { data, errors } = await createRecord({
+              variables: {
+                ...values,
+                attachmentId: parseInt(attachmentId),
+                userType: userInfo!.userType.toUpperCase(),
+                patientId: undefined,
+              },
+            });
+
+            console.log(data);
+          } catch (error) {
+            console.log(error);
+          }
         }}
       >
         {({ isSubmitting }) => (
@@ -106,11 +109,22 @@ const PatientRecord = (props: PatientRecordProps) => {
             <Spacer mt={4} />
             <FormControl>
               <FormLabel htmlFor='description'>Description</FormLabel>
-              <Textarea
-                id='description'
-                name='description'
-                placeholder='Enter Record Description'
-              />
+              <Field name='description'>
+                {({ field, form }: any) => (
+                  <FormControl
+                    isInvalid={form.errors.name && form.touched.name}
+                  >
+                    <FormLabel htmlFor='description'>Description</FormLabel>
+                    <Textarea
+                      {...field}
+                      id='description'
+                      placeholder='Enter Record Description'
+                    />
+                    {/* <FormErrorMessage>{form.errors.name}</FormErrorMessage> */}
+                  </FormControl>
+                )}
+              </Field>
+
               {/* {error && <FormErrorMessage>{error}</FormErrorMessage>} */}
             </FormControl>
             <Spacer mt={4} />
@@ -121,12 +135,16 @@ const PatientRecord = (props: PatientRecordProps) => {
                 name='attachment'
                 placeholder='Select File'
                 type='file'
-                onChange={uploadFileHandler}
               />
               {/* {error && <FormErrorMessage>{error}</FormErrorMessage>} */}
             </FormControl>
 
-            <Button mt={8} type='submit' color='teal' isLoading={isSubmitting}>
+            <Button
+              mt={8}
+              type='submit'
+              color='teal'
+              isLoading={isSubmitting || uploading}
+            >
               Add Record
             </Button>
           </Form>

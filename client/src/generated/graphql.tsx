@@ -60,8 +60,9 @@ export type MeResponse = {
 export type Mutation = {
   __typename?: 'Mutation';
   addPatient: Scalars['Boolean'];
-  createPatientRecord: Record;
+  createRecord: Record;
   createRequest: Scalars['Boolean'];
+  deleteFile: Scalars['Boolean'];
   deleteRecord: Scalars['Boolean'];
   deleteRequest: Scalars['Boolean'];
   doctorRegister: UserResponse;
@@ -70,7 +71,7 @@ export type Mutation = {
   patientRegister: UserResponse;
   removePatient: Scalars['Boolean'];
   revokeAccess: Scalars['Boolean'];
-  singleUpload: Scalars['Boolean'];
+  singleUpload: Scalars['String'];
   updateRecord?: Maybe<Record>;
 };
 
@@ -80,8 +81,13 @@ export type MutationAddPatientArgs = {
 };
 
 
-export type MutationCreatePatientRecordArgs = {
-  input: RecordInput;
+export type MutationCreateRecordArgs = {
+  attachmentId: Scalars['Int'];
+  category: Scalars['String'];
+  description: Scalars['String'];
+  patientId?: InputMaybe<Scalars['String']>;
+  title: Scalars['String'];
+  userType: Scalars['String'];
 };
 
 
@@ -89,6 +95,11 @@ export type MutationCreateRequestArgs = {
   content: Scalars['String'];
   patientId: Scalars['String'];
   recordId: Scalars['Float'];
+};
+
+
+export type MutationDeleteFileArgs = {
+  filename: Scalars['String'];
 };
 
 
@@ -196,16 +207,9 @@ export type QueryRecordArgs = {
 
 export type Record = {
   __typename?: 'Record';
-  attachment?: Maybe<Scalars['String']>;
   category: Scalars['String'];
   description: Scalars['String'];
   id: Scalars['ID'];
-  title: Scalars['String'];
-};
-
-export type RecordInput = {
-  category: Scalars['String'];
-  description: Scalars['String'];
   title: Scalars['String'];
 };
 
@@ -224,6 +228,18 @@ export type LoginMutationVariables = Exact<{
 
 
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', accessToken: string } };
+
+export type CreateRecordMutationVariables = Exact<{
+  userType: Scalars['String'];
+  attachmentId: Scalars['Int'];
+  category: Scalars['String'];
+  description: Scalars['String'];
+  title: Scalars['String'];
+  patientId?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type CreateRecordMutation = { __typename?: 'Mutation', createRecord: { __typename?: 'Record', title: string, id: string, category: string, description: string } };
 
 export type PatientRegisterMutationVariables = Exact<{
   input: PatientInput;
@@ -244,7 +260,7 @@ export type SingleUploadMutationVariables = Exact<{
 }>;
 
 
-export type SingleUploadMutation = { __typename?: 'Mutation', singleUpload: boolean };
+export type SingleUploadMutation = { __typename?: 'Mutation', singleUpload: string };
 
 export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -292,6 +308,54 @@ export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginM
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export const CreateRecordDocument = gql`
+    mutation CreateRecord($userType: String!, $attachmentId: Int!, $category: String!, $description: String!, $title: String!, $patientId: String) {
+  createRecord(
+    userType: $userType
+    attachmentId: $attachmentId
+    category: $category
+    description: $description
+    title: $title
+    patientId: $patientId
+  ) {
+    title
+    id
+    category
+    description
+  }
+}
+    `;
+export type CreateRecordMutationFn = Apollo.MutationFunction<CreateRecordMutation, CreateRecordMutationVariables>;
+
+/**
+ * __useCreateRecordMutation__
+ *
+ * To run a mutation, you first call `useCreateRecordMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateRecordMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createRecordMutation, { data, loading, error }] = useCreateRecordMutation({
+ *   variables: {
+ *      userType: // value for 'userType'
+ *      attachmentId: // value for 'attachmentId'
+ *      category: // value for 'category'
+ *      description: // value for 'description'
+ *      title: // value for 'title'
+ *      patientId: // value for 'patientId'
+ *   },
+ * });
+ */
+export function useCreateRecordMutation(baseOptions?: Apollo.MutationHookOptions<CreateRecordMutation, CreateRecordMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateRecordMutation, CreateRecordMutationVariables>(CreateRecordDocument, options);
+      }
+export type CreateRecordMutationHookResult = ReturnType<typeof useCreateRecordMutation>;
+export type CreateRecordMutationResult = Apollo.MutationResult<CreateRecordMutation>;
+export type CreateRecordMutationOptions = Apollo.BaseMutationOptions<CreateRecordMutation, CreateRecordMutationVariables>;
 export const PatientRegisterDocument = gql`
     mutation PatientRegister($input: PatientInput!) {
   patientRegister(input: $input) {

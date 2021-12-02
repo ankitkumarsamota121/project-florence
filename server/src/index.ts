@@ -3,8 +3,6 @@ import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
-import { ApolloServerPluginLandingPageDisabled } from 'apollo-server-core';
-
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
 import { Record } from './entities/Record';
@@ -20,6 +18,7 @@ import { graphqlUploadExpress } from 'graphql-upload';
 import { PatientResolver } from './resolvers/patient';
 import { ConsentRequest } from './entities/ConsentRequest';
 import { ConsentRequestResolver } from './resolvers/consentRequest';
+import { Attachment } from './entities/Attachment';
 
 const main = async () => {
   const conn = await createConnection({
@@ -35,6 +34,7 @@ const main = async () => {
       DoctorPatient,
       DoctorRecord,
       ConsentRequest,
+      Attachment,
     ],
   });
   await conn.runMigrations();
@@ -95,7 +95,6 @@ const main = async () => {
       //   userLoader: createUserLoader(),
       //   updootLoader: createUpdootLoader(),
     }),
-    plugins: [ApolloServerPluginLandingPageDisabled()],
   });
 
   await apolloServer.start();

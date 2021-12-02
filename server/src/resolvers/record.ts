@@ -14,22 +14,22 @@ import {
   UseMiddleware,
 } from 'type-graphql';
 import { Record } from '../entities/Record';
+import { Attachment } from '../entities/Attachment';
 import { FieldError } from '../utils/FieldError';
 import { UserInputError } from 'apollo-server-express';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { createWriteStream } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
+import { DOCTOR } from '../constants/userType';
 
 @InputType()
 class RecordInput {
   @Field()
   title: string;
-  // doctor: string;
 
   @Field()
   category: string;
-  // attachment: string;
 
   @Field()
   description: string;
@@ -71,43 +71,6 @@ export class RecordResolver {
 
     return record;
   }
-
-  // @Mutation(() => Record)
-  // @UseMiddleware(isAuthenticated)
-  // async createPatientRecord(
-  //   @Arg('input') input: RecordInput,
-  //   @Arg('file', () => GraphQLUpload)
-  //   { createReadStream, filename }: FileUpload,
-  //   @Ctx() { payload }: MyContext
-  // ): Promise<Record> {
-  //   const patient = await Patient.findOne({
-  //     where: { id: payload!.userId },
-  //   });
-  //   if (!patient) {
-  //     throw new UserInputError('No patient found with given ID!');
-  //   }
-
-  //   const a = filename.split('.');
-  //   const idx = a.length - 1;
-  //   const ext = a[idx];
-  //   const uuidFilename = uuidv4() + ext;
-  //   return new Promise(async (resolve, reject) =>
-  //     createReadStream()
-  //       .pipe(createWriteStream(__dirname + `/../../files/${uuidFilename}`))
-  //       .on('finish', async () => {
-  //         const fileUrl = `http://localhost:4000/files/${uuidFilename}`;
-  //         const record = await Record.create(input);
-
-  //         record.patient = patient;
-  //         record.attachment = fileUrl;
-  //         await Record.save(record);
-  //         resolve(record);
-  //       })
-  //       .on('error', () =>
-  //         reject(new ApolloError('Some error occured! Please try again later.'))
-  //       )
-  //   );
-  // }
 
   /**
    * TODO: Create a Mutation for the doctor to add records
@@ -165,7 +128,44 @@ export class RecordResolver {
     return true;
   }
 
-  @Mutation(() => String)
+  @Mutation(() => Record)
+  @UseMiddleware(isAuthenticated)
+  async createRecord(
+    @Arg('input') input: RecordInput,
+    @Arg('attachmentId', () => Int) attachmentId: number,
+    @Arg('userType') userType: string,
+    @Ctx() { payload }: MyContext,
+    @Arg('patientId', () => String, { nullable: true }) patientId?: string
+  ): Promise<Record> {
+    let patient;
+    if (userType === DOCTOR) {
+      console.log(patientId);
+      throw new Error('WORK IN PROGRESS!!!');
+    } else {
+      patient = await Patient.findOne({
+        where: { id: payload!.userId },
+      });
+
+      if (!patient) {
+        throw new UserInputError('No patient found with given ID!');
+      }
+    }
+
+    const attachment = await Attachment.findOne(attachmentId);
+    if (!attachment) {
+      throw new UserInputError('No attachment found with given ID!');
+    }
+
+    const record = await Record.create(input);
+
+    record.patient = Promise.resolve(patient);
+    await Record.save(record);
+
+    attachment.record = Promise.resolve(record);
+    return record;
+  }
+
+  @Mutation(() => Int)
   async singleUpload(
     @Arg('file', () => GraphQLUpload)
     { createReadStream, filename }: FileUpload
@@ -175,12 +175,17 @@ export class RecordResolver {
     const ext = a[idx];
     const newFileName = uuidv4() + '.' + ext;
     const filePath = __dirname + `/../../uploads/${newFileName}`;
+    const url = `http://localhost:4000/uploads/${newFileName}`;
 
     return new Promise(async (resolve, reject) =>
       createReadStream()
         .pipe(createWriteStream(filePath))
-        .on('finish', () => resolve(newFileName))
-        .on('error', () => reject(''))
+        .on('finish', async () => {
+          const attachment = await Attachment.create({ url });
+          await Attachment.save(attachment);
+          return resolve(attachment.id);
+        })
+        .on('error', () => reject(-1))
     );
   }
 
@@ -193,26 +198,5 @@ export class RecordResolver {
     } catch (err) {
       return false;
     }
-  }
-
-  @Mutation(() => Record)
-  @UseMiddleware(isAuthenticated)
-  async createPatientRecord(
-    @Arg('input') input: RecordInput,
-    @Ctx() { payload }: MyContext
-  ): Promise<Record> {
-    const patient = await Patient.findOne({
-      where: { id: payload!.userId },
-    });
-    if (!patient) {
-      throw new UserInputError('No patient found with given ID!');
-    }
-
-    const record = await Record.create(input);
-
-    record.patient = Promise.resolve(patient);
-    await Record.save(record);
-
-    return record;
   }
 }
