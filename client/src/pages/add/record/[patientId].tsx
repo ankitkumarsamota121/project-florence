@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useRef, useState } from 'react';
+import NextLink from 'next/link';
 import {
   Spacer,
   Flex,
@@ -9,29 +10,33 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  Text,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { Formik, Form, Field } from 'formik';
-import InputField from '../../components/InputField';
-import SelectField from '../../components/SelectField';
-import Wrapper from '../../components/Wrapper';
+import InputField from '../../../components/InputField';
+import SelectField from '../../../components/SelectField';
+import Wrapper from '../../../components/Wrapper';
 import {
+  RecordsDocument,
   useCreateRecordMutation,
   useMeQuery,
-  useSingleUploadMutation,
-} from '../../generated/graphql';
-import { setToken } from '../../utils/tokenManager';
+} from '../../../generated/graphql';
 import { get } from 'lodash';
+import { useRouter } from 'next/dist/client/router';
 
-interface PatientRecordProps {}
-
-const PatientRecord = (props: PatientRecordProps) => {
+const PatientRecord = () => {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const [createRecord] = useCreateRecordMutation();
+  const router = useRouter();
 
   const { data: meData } = useMeQuery({
     nextFetchPolicy: 'cache-first',
   });
-  let userInfo = get(meData, 'me', null);
+  const userInfo = get(meData, 'me', null);
+  const patientId = router.query.pid as string;
 
   const recordCategories = ['AB', 'BCD', 'ED'];
 
@@ -53,12 +58,22 @@ const PatientRecord = (props: PatientRecordProps) => {
       return data?.singleUpload;
     } catch (error) {
       console.error(error);
+      setError('Error occured in uploading!');
       setUploading(false);
     }
   };
 
   return (
     <Wrapper variant='small'>
+      <NextLink href={`/profile/${userInfo?.userType.toLowerCase()}`}>
+        <Button>Go Back</Button>
+      </NextLink>
+      {error && (
+        <Alert status='error'>
+          <AlertIcon />
+          {error}
+        </Alert>
+      )}
       <Formik
         initialValues={{
           title: '',
@@ -71,29 +86,38 @@ const PatientRecord = (props: PatientRecordProps) => {
             'attachment'
           ) as HTMLInputElement;
           if (!attachmentRef || !attachmentRef.files) {
-            console.log('SOME ERROR OCCURED!!!');
+            console.log('Unable to access the file!');
             return;
           }
 
-          const attachmentId = await uploadFile(attachmentRef.files[0]);
           try {
+            const attachmentId = await uploadFile(attachmentRef.files[0]);
             const { data, errors } = await createRecord({
               variables: {
-                ...values,
+                input: values,
                 attachmentId: parseInt(attachmentId),
                 userType: userInfo!.userType.toUpperCase(),
-                patientId: undefined,
+                patientId: patientId || undefined,
               },
+              refetchQueries: [RecordsDocument],
             });
 
-            console.log(data);
+            if (errors) {
+              console.log(errors);
+              setError('Some error occurred in creating Record!');
+            } else {
+              console.log(data);
+              router.push(`/profile/${userInfo?.userType.toLowerCase()}`);
+            }
           } catch (error) {
             console.log(error);
+            setError('Some error occurred in executing query!');
           }
         }}
       >
         {({ isSubmitting }) => (
           <Form>
+            <Spacer mt={8} />
             <InputField
               name='title'
               placeholder='Enter Record Title'
@@ -107,26 +131,22 @@ const PatientRecord = (props: PatientRecordProps) => {
               options={recordCategories}
             />
             <Spacer mt={4} />
-            <FormControl>
-              <FormLabel htmlFor='description'>Description</FormLabel>
-              <Field name='description'>
-                {({ field, form }: any) => (
-                  <FormControl
-                    isInvalid={form.errors.name && form.touched.name}
-                  >
-                    <FormLabel htmlFor='description'>Description</FormLabel>
-                    <Textarea
-                      {...field}
-                      id='description'
-                      placeholder='Enter Record Description'
-                    />
-                    {/* <FormErrorMessage>{form.errors.name}</FormErrorMessage> */}
-                  </FormControl>
-                )}
-              </Field>
 
-              {/* {error && <FormErrorMessage>{error}</FormErrorMessage>} */}
-            </FormControl>
+            <Field name='description'>
+              {({ field, form }: any) => (
+                <FormControl isInvalid={form.errors.name && form.touched.name}>
+                  <FormLabel htmlFor='description'>Description</FormLabel>
+                  <Textarea
+                    {...field}
+                    id='description'
+                    placeholder='Enter Record Description'
+                  />
+                  {/* <FormErrorMessage>{form.errors.name}</FormErrorMessage> */}
+                </FormControl>
+              )}
+            </Field>
+
+            {/* {error && <FormErrorMessage>{error}</FormErrorMessage>} */}
             <Spacer mt={4} />
             <FormControl>
               <FormLabel htmlFor='attachment'>Attachment</FormLabel>

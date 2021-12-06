@@ -1,0 +1,8 @@
+query Records {
+  records {
+    id
+    title
+    category
+    description
+  }
+}

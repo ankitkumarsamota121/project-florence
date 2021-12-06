@@ -71,7 +71,7 @@ export type Mutation = {
   patientRegister: UserResponse;
   removePatient: Scalars['Boolean'];
   revokeAccess: Scalars['Boolean'];
-  singleUpload: Scalars['String'];
+  singleUpload: Scalars['Int'];
   updateRecord?: Maybe<Record>;
 };
 
@@ -83,10 +83,8 @@ export type MutationAddPatientArgs = {
 
 export type MutationCreateRecordArgs = {
   attachmentId: Scalars['Int'];
-  category: Scalars['String'];
-  description: Scalars['String'];
+  input: RecordInput;
   patientId?: InputMaybe<Scalars['String']>;
-  title: Scalars['String'];
   userType: Scalars['String'];
 };
 
@@ -213,6 +211,12 @@ export type Record = {
   title: Scalars['String'];
 };
 
+export type RecordInput = {
+  category: Scalars['String'];
+  description: Scalars['String'];
+  title: Scalars['String'];
+};
+
 export type User = Doctor | Patient;
 
 export type UserResponse = {
@@ -232,14 +236,12 @@ export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'Us
 export type CreateRecordMutationVariables = Exact<{
   userType: Scalars['String'];
   attachmentId: Scalars['Int'];
-  category: Scalars['String'];
-  description: Scalars['String'];
-  title: Scalars['String'];
+  input: RecordInput;
   patientId?: InputMaybe<Scalars['String']>;
 }>;
 
 
-export type CreateRecordMutation = { __typename?: 'Mutation', createRecord: { __typename?: 'Record', title: string, id: string, category: string, description: string } };
+export type CreateRecordMutation = { __typename?: 'Mutation', createRecord: { __typename?: 'Record', id: string, title: string, category: string, description: string } };
 
 export type PatientRegisterMutationVariables = Exact<{
   input: PatientInput;
@@ -260,7 +262,7 @@ export type SingleUploadMutationVariables = Exact<{
 }>;
 
 
-export type SingleUploadMutation = { __typename?: 'Mutation', singleUpload: string };
+export type SingleUploadMutation = { __typename?: 'Mutation', singleUpload: number };
 
 export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -271,6 +273,11 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type MeQuery = { __typename?: 'Query', me: { __typename?: 'MeResponse', userType: string, user: { __typename?: 'Doctor', name: string, id: string, specialities: string, email: string, designation: string } | { __typename?: 'Patient', id: string, name: string, email: string, gender: string, blood_group: string } } };
+
+export type RecordsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RecordsQuery = { __typename?: 'Query', records: Array<{ __typename?: 'Record', id: string, title: string, category: string, description: string }> };
 
 
 export const LoginDocument = gql`
@@ -309,17 +316,15 @@ export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
 export const CreateRecordDocument = gql`
-    mutation CreateRecord($userType: String!, $attachmentId: Int!, $category: String!, $description: String!, $title: String!, $patientId: String) {
+    mutation CreateRecord($userType: String!, $attachmentId: Int!, $input: RecordInput!, $patientId: String) {
   createRecord(
     userType: $userType
     attachmentId: $attachmentId
-    category: $category
-    description: $description
-    title: $title
+    input: $input
     patientId: $patientId
   ) {
-    title
     id
+    title
     category
     description
   }
@@ -342,9 +347,7 @@ export type CreateRecordMutationFn = Apollo.MutationFunction<CreateRecordMutatio
  *   variables: {
  *      userType: // value for 'userType'
  *      attachmentId: // value for 'attachmentId'
- *      category: // value for 'category'
- *      description: // value for 'description'
- *      title: // value for 'title'
+ *      input: // value for 'input'
  *      patientId: // value for 'patientId'
  *   },
  * });
@@ -535,3 +538,40 @@ export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const RecordsDocument = gql`
+    query Records {
+  records {
+    id
+    title
+    category
+    description
+  }
+}
+    `;
+
+/**
+ * __useRecordsQuery__
+ *
+ * To run a query within a React component, call `useRecordsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRecordsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRecordsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRecordsQuery(baseOptions?: Apollo.QueryHookOptions<RecordsQuery, RecordsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RecordsQuery, RecordsQueryVariables>(RecordsDocument, options);
+      }
+export function useRecordsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RecordsQuery, RecordsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RecordsQuery, RecordsQueryVariables>(RecordsDocument, options);
+        }
+export type RecordsQueryHookResult = ReturnType<typeof useRecordsQuery>;
+export type RecordsLazyQueryHookResult = ReturnType<typeof useRecordsLazyQuery>;
+export type RecordsQueryResult = Apollo.QueryResult<RecordsQuery, RecordsQueryVariables>;

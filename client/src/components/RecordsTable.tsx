@@ -1,16 +1,13 @@
 import { Table, Thead, Tr, Th, Tbody } from '@chakra-ui/react';
 import React from 'react';
+import { Record as RecordType } from '../generated/graphql';
 import Record from './Record';
 
-interface Props {}
+interface RecordsTableProps {
+  records: RecordType[];
+}
 
-const RecordsTable = (props: Props) => {
-  const record = {
-    title: 'Other diseases of spleen',
-    category: 'S75119D',
-    description:
-      ' Minor laceration of femoral vein at hip and thigh level unspecified leg, subsequent encounter',
-  };
+const RecordsTable = ({ records }: RecordsTableProps) => {
   return (
     <Table variant='striped' colorScheme='teal'>
       <Thead>
@@ -22,21 +19,14 @@ const RecordsTable = (props: Props) => {
         </Tr>
       </Thead>
       <Tbody>
-        <Record
-          title={record.title}
-          category={record.category}
-          description={record.description}
-        />
-        <Record
-          title={record.title}
-          category={record.category}
-          description={record.description}
-        />
-        <Record
-          title={record.title}
-          category={record.category}
-          description={record.description}
-        />
+        {records.map((record, idx) => (
+          <Record
+            key={idx}
+            title={record.title}
+            category={record.category}
+            description={record.description}
+          />
+        ))}
       </Tbody>
     </Table>
   );

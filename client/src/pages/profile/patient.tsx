@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import NextLink from 'next/link';
 import {
   Box,
@@ -16,22 +16,36 @@ import {
 } from '@chakra-ui/react';
 import RecordsTable from '../../components/RecordsTable';
 import UserInfoTable from '../../components/UserInfoTable';
-import { useMeQuery } from '../../generated/graphql';
+import { useMeQuery, useRecordsQuery } from '../../generated/graphql';
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 
-interface PatientProfileProps {}
-
-const PatientProfile = (props: PatientProfileProps) => {
+const PatientProfile = () => {
+  const [loading, setLoading] = useState(false);
   const { data: meData, loading: meLoading } = useMeQuery();
   const userInfo = get(meData, 'me', null);
   const router = useRouter();
+
+  const {
+    data: recordsData,
+    loading: loadingRecords,
+    refetch: refetchRecords,
+  } = useRecordsQuery();
+  let records = get(recordsData, 'records', []);
 
   useEffect(() => {
     const curr = router.pathname;
     const path = `/profile/${userInfo?.userType.toLowerCase()}`;
     if (curr !== path) router.push('/');
-  }, [meLoading]);
+  }, [meLoading, loadingRecords]);
+
+  const refetchHandler = async () => {
+    setLoading(true);
+    const { data: recordsData } = await refetchRecords();
+    records = get(recordsData, 'records', []);
+    setLoading(false);
+  };
+
   return (
     <Container maxW='container.xl'>
       <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
@@ -51,6 +65,7 @@ const PatientProfile = (props: PatientProfileProps) => {
                   mt={4}
                   width='100%'
                   height='50px'
+                  onClick={refetchHandler}
                 >
                   Refetch
                 </Button>
@@ -67,8 +82,12 @@ const PatientProfile = (props: PatientProfileProps) => {
 
             <TabPanels>
               <TabPanel>
-                <RecordsTable />
-                <NextLink href='/addRecord/patient'>
+                {loadingRecords || loading ? (
+                  <Spinner />
+                ) : (
+                  <RecordsTable records={records} />
+                )}
+                <NextLink href={`/add/record/${userInfo?.user.id}`}>
                   <Button colorScheme='teal' mt={4} width='200px' height='50px'>
                     Add Record
                   </Button>

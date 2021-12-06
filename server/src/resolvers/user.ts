@@ -23,6 +23,7 @@ import { isAuthenticated } from '../middlewares/isAuthenticated';
 // Entities
 import { Patient } from '../entities/Patient';
 import { Doctor } from '../entities/Doctor';
+import { PATIENT } from '../constants/userType';
 
 @ObjectType()
 class UserResponse {
@@ -42,8 +43,6 @@ class MeResponse {
   @Field()
   userType: string;
 }
-
-
 
 @InputType()
 abstract class UserInput {
@@ -159,7 +158,7 @@ export class UserResolver {
     @Arg('userType') userType: string
   ): Promise<UserResponse> {
     let user;
-    if (userType === 'patient') {
+    if (userType === PATIENT) {
       user = await Patient.findOne({ where: { email } });
     } else {
       user = await Doctor.findOne({ where: { email } });

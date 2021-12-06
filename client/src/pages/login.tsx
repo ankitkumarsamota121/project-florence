@@ -1,12 +1,23 @@
 import React, { useEffect } from 'react';
-import { Formik, Form } from 'formik';
-import { Box, Button } from '@chakra-ui/react';
+import { Formik, Form, Field } from 'formik';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Radio,
+  RadioGroup,
+  Spacer,
+  Stack,
+} from '@chakra-ui/react';
 import Wrapper from '../components/Wrapper';
 import InputField from '../components/InputField';
 import { useLoginMutation } from '../generated/graphql';
 import { setToken, tokenVar } from '../utils/tokenManager';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
+import { DOCTOR, PATIENT } from '../constants/userType';
+import UserTypeField from '../components/UserTypeField';
 
 interface LoginProps {}
 
@@ -23,8 +34,9 @@ const Login: React.FC<LoginProps> = () => {
   return (
     <Wrapper variant='small'>
       <Formik
-        initialValues={{ email: '', password: '' }}
+        initialValues={{ email: '', password: '', userType: '' }}
         onSubmit={async (values) => {
+          console.log(values);
           const { data, errors } = await login({
             variables: { ...values, userType: 'patient' },
           });
@@ -39,14 +51,16 @@ const Login: React.FC<LoginProps> = () => {
         {({ values, handleChange, isSubmitting }) => (
           <Form>
             <InputField name='email' placeholder='Email' label='Email' />
-            <Box mt={4}>
-              <InputField
-                name='password'
-                placeholder='Password'
-                label='Password'
-                type='password'
-              />
-            </Box>
+            <Spacer mt={4} />
+            <InputField
+              name='password'
+              placeholder='Password'
+              label='Password'
+              type='password'
+            />
+            <Spacer mt={4} />
+            <UserTypeField name='userType' label='User Type' />
+
             <Button mt={4} type='submit' color='teal' isLoading={isSubmitting}>
               Login
             </Button>

@@ -1,21 +1,17 @@
 mutation CreateRecord(
   $userType: String!
   $attachmentId: Int!
-  $category: String!
-  $description: String!
-  $title: String!
+  $input: RecordInput!
   $patientId: String
 ) {
   createRecord(
     userType: $userType
     attachmentId: $attachmentId
-    category: $category
-    description: $description
-    title: $title
+    input: $input
     patientId: $patientId
   ) {
-    title
     id
+    title
     category
     description
   }
