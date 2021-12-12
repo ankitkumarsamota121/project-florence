@@ -6,7 +6,6 @@ import { setContext } from '@apollo/client/link/context';
 import { cache } from '../utils/cache';
 import { tokenVar } from '../utils/tokenManager';
 import validateToken from '../utils/validateToken';
-import { from } from 'apollo-boost';
 
 // import { useEffect } from 'react';
 

@@ -2,10 +2,14 @@ import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-const defaultOptions =  {}
+export type Exact<T extends { [key: string]: unknown }> = {
+  [K in keyof T]: T[K];
+};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> &
+  { [SubKey in K]: Maybe<T[SubKey]> };
+const defaultOptions = {};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -22,6 +26,7 @@ export type BasicRecordResponse = {
   category: Scalars['String'];
   description: Scalars['String'];
   id: Scalars['Float'];
+  isAuthorized: Scalars['Boolean'];
   title: Scalars['String'];
 };
 
@@ -60,26 +65,30 @@ export type MeResponse = {
 export type Mutation = {
   __typename?: 'Mutation';
   addPatient: Scalars['Boolean'];
+  createConsentRequest: Scalars['Boolean'];
   createRecord: Record;
-  createRequest: Scalars['Boolean'];
+  deleteConsentRequest: Scalars['Boolean'];
   deleteFile: Scalars['Boolean'];
   deleteRecord: Scalars['Boolean'];
-  deleteRequest: Scalars['Boolean'];
   doctorRegister: UserResponse;
   grantAccess: Scalars['Boolean'];
   login: UserResponse;
   patientRegister: UserResponse;
   removePatient: Scalars['Boolean'];
   revokeAccess: Scalars['Boolean'];
-  singleUpload: Scalars['Int'];
   updateRecord?: Maybe<Record>;
+  uploadFile: Scalars['Int'];
 };
-
 
 export type MutationAddPatientArgs = {
-  patientId: Scalars['String'];
+  patientEmail: Scalars['String'];
 };
 
+export type MutationCreateConsentRequestArgs = {
+  content: Scalars['String'];
+  patientId: Scalars['String'];
+  recordId: Scalars['Float'];
+};
 
 export type MutationCreateRecordArgs = {
   attachmentId: Scalars['Int'];
@@ -88,39 +97,26 @@ export type MutationCreateRecordArgs = {
   userType: Scalars['String'];
 };
 
-
-export type MutationCreateRequestArgs = {
-  content: Scalars['String'];
-  patientId: Scalars['String'];
-  recordId: Scalars['Float'];
+export type MutationDeleteConsentRequestArgs = {
+  id: Scalars['Int'];
 };
-
 
 export type MutationDeleteFileArgs = {
   filename: Scalars['String'];
 };
 
-
 export type MutationDeleteRecordArgs = {
   id: Scalars['Int'];
 };
-
-
-export type MutationDeleteRequestArgs = {
-  id: Scalars['Int'];
-};
-
 
 export type MutationDoctorRegisterArgs = {
   input: DoctorInput;
 };
 
-
 export type MutationGrantAccessArgs = {
   doctorId: Scalars['String'];
   recordId: Scalars['Float'];
 };
-
 
 export type MutationLoginArgs = {
   email: Scalars['String'];
@@ -128,33 +124,28 @@ export type MutationLoginArgs = {
   userType: Scalars['String'];
 };
 
-
 export type MutationPatientRegisterArgs = {
   input: PatientInput;
 };
 
-
 export type MutationRemovePatientArgs = {
   patientId: Scalars['String'];
 };
-
 
 export type MutationRevokeAccessArgs = {
   doctorId: Scalars['String'];
   recordId: Scalars['Float'];
 };
 
-
-export type MutationSingleUploadArgs = {
-  file: Scalars['Upload'];
-};
-
-
 export type MutationUpdateRecordArgs = {
   category?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   id: Scalars['Int'];
   title?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUploadFileArgs = {
+  file: Scalars['Upload'];
 };
 
 export type Patient = {
@@ -176,30 +167,25 @@ export type PatientInput = {
 
 export type Query = {
   __typename?: 'Query';
-  doctors: Array<Doctor>;
   getConsentRequests: Array<ConsentRequest>;
   getPatientRecord: Record;
   getPatientRecords: Array<BasicRecordResponse>;
   getPatients: Array<Patient>;
+  getRecord?: Maybe<Record>;
+  getRecords: Array<Record>;
   hello: Scalars['String'];
   me: MeResponse;
-  patients: Array<Patient>;
-  record?: Maybe<Record>;
-  records: Array<Record>;
 };
-
 
 export type QueryGetPatientRecordArgs = {
   recordId: Scalars['Float'];
 };
 
-
 export type QueryGetPatientRecordsArgs = {
   patientId: Scalars['String'];
 };
 
-
-export type QueryRecordArgs = {
+export type QueryGetRecordArgs = {
   id: Scalars['Int'];
 };
 
@@ -230,8 +216,19 @@ export type LoginMutationVariables = Exact<{
   email: Scalars['String'];
 }>;
 
+export type LoginMutation = {
+  __typename?: 'Mutation';
+  login: { __typename?: 'UserResponse'; accessToken: string };
+};
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', accessToken: string } };
+export type AddPatientMutationVariables = Exact<{
+  patientEmail: Scalars['String'];
+}>;
+
+export type AddPatientMutation = {
+  __typename?: 'Mutation';
+  addPatient: boolean;
+};
 
 export type CreateRecordMutationVariables = Exact<{
   userType: Scalars['String'];
@@ -240,54 +237,129 @@ export type CreateRecordMutationVariables = Exact<{
   patientId?: InputMaybe<Scalars['String']>;
 }>;
 
-
-export type CreateRecordMutation = { __typename?: 'Mutation', createRecord: { __typename?: 'Record', id: string, title: string, category: string, description: string } };
+export type CreateRecordMutation = {
+  __typename?: 'Mutation';
+  createRecord: {
+    __typename?: 'Record';
+    id: string;
+    title: string;
+    category: string;
+    description: string;
+  };
+};
 
 export type PatientRegisterMutationVariables = Exact<{
   input: PatientInput;
 }>;
 
-
-export type PatientRegisterMutation = { __typename?: 'Mutation', patientRegister: { __typename?: 'UserResponse', accessToken: string } };
+export type PatientRegisterMutation = {
+  __typename?: 'Mutation';
+  patientRegister: { __typename?: 'UserResponse'; accessToken: string };
+};
 
 export type DoctorRegisterMutationVariables = Exact<{
   input: DoctorInput;
 }>;
 
+export type DoctorRegisterMutation = {
+  __typename?: 'Mutation';
+  doctorRegister: { __typename?: 'UserResponse'; accessToken: string };
+};
 
-export type DoctorRegisterMutation = { __typename?: 'Mutation', doctorRegister: { __typename?: 'UserResponse', accessToken: string } };
-
-export type SingleUploadMutationVariables = Exact<{
+export type UploadFileMutationVariables = Exact<{
   file: Scalars['Upload'];
 }>;
 
+export type UploadFileMutation = {
+  __typename?: 'Mutation';
+  uploadFile: number;
+};
 
-export type SingleUploadMutation = { __typename?: 'Mutation', singleUpload: number };
+export type HelloQueryVariables = Exact<{ [key: string]: never }>;
 
-export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
+export type HelloQuery = { __typename?: 'Query'; hello: string };
 
+export type MeQueryVariables = Exact<{ [key: string]: never }>;
 
-export type HelloQuery = { __typename?: 'Query', hello: string };
+export type MeQuery = {
+  __typename?: 'Query';
+  me: {
+    __typename?: 'MeResponse';
+    userType: string;
+    user:
+      | {
+          __typename?: 'Doctor';
+          name: string;
+          id: string;
+          specialities: string;
+          email: string;
+          designation: string;
+        }
+      | {
+          __typename?: 'Patient';
+          id: string;
+          name: string;
+          email: string;
+          gender: string;
+          blood_group: string;
+        };
+  };
+};
 
-export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetPatientsQueryVariables = Exact<{ [key: string]: never }>;
 
+export type GetPatientsQuery = {
+  __typename?: 'Query';
+  getPatients: Array<{
+    __typename?: 'Patient';
+    id: string;
+    name: string;
+    email: string;
+    gender: string;
+    blood_group: string;
+  }>;
+};
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'MeResponse', userType: string, user: { __typename?: 'Doctor', name: string, id: string, specialities: string, email: string, designation: string } | { __typename?: 'Patient', id: string, name: string, email: string, gender: string, blood_group: string } } };
+export type GetPatientRecordsQueryVariables = Exact<{
+  patientId: Scalars['String'];
+}>;
 
-export type RecordsQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetPatientRecordsQuery = {
+  __typename?: 'Query';
+  getPatientRecords: Array<{
+    __typename?: 'BasicRecordResponse';
+    id: number;
+    title: string;
+    description: string;
+    category: string;
+    isAuthorized: boolean;
+  }>;
+};
 
+export type GetRecordsQueryVariables = Exact<{ [key: string]: never }>;
 
-export type RecordsQuery = { __typename?: 'Query', records: Array<{ __typename?: 'Record', id: string, title: string, category: string, description: string }> };
-
+export type GetRecordsQuery = {
+  __typename?: 'Query';
+  getRecords: Array<{
+    __typename?: 'Record';
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+  }>;
+};
 
 export const LoginDocument = gql`
-    mutation Login($userType: String!, $password: String!, $email: String!) {
-  login(userType: $userType, password: $password, email: $email) {
-    accessToken
+  mutation Login($userType: String!, $password: String!, $email: String!) {
+    login(userType: $userType, password: $password, email: $email) {
+      accessToken
+    }
   }
-}
-    `;
-export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
+`;
+export type LoginMutationFn = Apollo.MutationFunction<
+  LoginMutation,
+  LoginMutationVariables
+>;
 
 /**
  * __useLoginMutation__
@@ -308,29 +380,96 @@ export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutati
  *   },
  * });
  */
-export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, options);
-      }
+export function useLoginMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    LoginMutation,
+    LoginMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<LoginMutation, LoginMutationVariables>(
+    LoginDocument,
+    options
+  );
+}
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
-export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
-export const CreateRecordDocument = gql`
-    mutation CreateRecord($userType: String!, $attachmentId: Int!, $input: RecordInput!, $patientId: String) {
-  createRecord(
-    userType: $userType
-    attachmentId: $attachmentId
-    input: $input
-    patientId: $patientId
-  ) {
-    id
-    title
-    category
-    description
+export type LoginMutationOptions = Apollo.BaseMutationOptions<
+  LoginMutation,
+  LoginMutationVariables
+>;
+export const AddPatientDocument = gql`
+  mutation AddPatient($patientEmail: String!) {
+    addPatient(patientEmail: $patientEmail)
   }
+`;
+export type AddPatientMutationFn = Apollo.MutationFunction<
+  AddPatientMutation,
+  AddPatientMutationVariables
+>;
+
+/**
+ * __useAddPatientMutation__
+ *
+ * To run a mutation, you first call `useAddPatientMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddPatientMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addPatientMutation, { data, loading, error }] = useAddPatientMutation({
+ *   variables: {
+ *      patientEmail: // value for 'patientEmail'
+ *   },
+ * });
+ */
+export function useAddPatientMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    AddPatientMutation,
+    AddPatientMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<AddPatientMutation, AddPatientMutationVariables>(
+    AddPatientDocument,
+    options
+  );
 }
-    `;
-export type CreateRecordMutationFn = Apollo.MutationFunction<CreateRecordMutation, CreateRecordMutationVariables>;
+export type AddPatientMutationHookResult = ReturnType<
+  typeof useAddPatientMutation
+>;
+export type AddPatientMutationResult =
+  Apollo.MutationResult<AddPatientMutation>;
+export type AddPatientMutationOptions = Apollo.BaseMutationOptions<
+  AddPatientMutation,
+  AddPatientMutationVariables
+>;
+export const CreateRecordDocument = gql`
+  mutation CreateRecord(
+    $userType: String!
+    $attachmentId: Int!
+    $input: RecordInput!
+    $patientId: String
+  ) {
+    createRecord(
+      userType: $userType
+      attachmentId: $attachmentId
+      input: $input
+      patientId: $patientId
+    ) {
+      id
+      title
+      category
+      description
+    }
+  }
+`;
+export type CreateRecordMutationFn = Apollo.MutationFunction<
+  CreateRecordMutation,
+  CreateRecordMutationVariables
+>;
 
 /**
  * __useCreateRecordMutation__
@@ -352,21 +491,38 @@ export type CreateRecordMutationFn = Apollo.MutationFunction<CreateRecordMutatio
  *   },
  * });
  */
-export function useCreateRecordMutation(baseOptions?: Apollo.MutationHookOptions<CreateRecordMutation, CreateRecordMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateRecordMutation, CreateRecordMutationVariables>(CreateRecordDocument, options);
-      }
-export type CreateRecordMutationHookResult = ReturnType<typeof useCreateRecordMutation>;
-export type CreateRecordMutationResult = Apollo.MutationResult<CreateRecordMutation>;
-export type CreateRecordMutationOptions = Apollo.BaseMutationOptions<CreateRecordMutation, CreateRecordMutationVariables>;
-export const PatientRegisterDocument = gql`
-    mutation PatientRegister($input: PatientInput!) {
-  patientRegister(input: $input) {
-    accessToken
-  }
+export function useCreateRecordMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateRecordMutation,
+    CreateRecordMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateRecordMutation,
+    CreateRecordMutationVariables
+  >(CreateRecordDocument, options);
 }
-    `;
-export type PatientRegisterMutationFn = Apollo.MutationFunction<PatientRegisterMutation, PatientRegisterMutationVariables>;
+export type CreateRecordMutationHookResult = ReturnType<
+  typeof useCreateRecordMutation
+>;
+export type CreateRecordMutationResult =
+  Apollo.MutationResult<CreateRecordMutation>;
+export type CreateRecordMutationOptions = Apollo.BaseMutationOptions<
+  CreateRecordMutation,
+  CreateRecordMutationVariables
+>;
+export const PatientRegisterDocument = gql`
+  mutation PatientRegister($input: PatientInput!) {
+    patientRegister(input: $input) {
+      accessToken
+    }
+  }
+`;
+export type PatientRegisterMutationFn = Apollo.MutationFunction<
+  PatientRegisterMutation,
+  PatientRegisterMutationVariables
+>;
 
 /**
  * __usePatientRegisterMutation__
@@ -385,21 +541,38 @@ export type PatientRegisterMutationFn = Apollo.MutationFunction<PatientRegisterM
  *   },
  * });
  */
-export function usePatientRegisterMutation(baseOptions?: Apollo.MutationHookOptions<PatientRegisterMutation, PatientRegisterMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<PatientRegisterMutation, PatientRegisterMutationVariables>(PatientRegisterDocument, options);
-      }
-export type PatientRegisterMutationHookResult = ReturnType<typeof usePatientRegisterMutation>;
-export type PatientRegisterMutationResult = Apollo.MutationResult<PatientRegisterMutation>;
-export type PatientRegisterMutationOptions = Apollo.BaseMutationOptions<PatientRegisterMutation, PatientRegisterMutationVariables>;
-export const DoctorRegisterDocument = gql`
-    mutation DoctorRegister($input: DoctorInput!) {
-  doctorRegister(input: $input) {
-    accessToken
-  }
+export function usePatientRegisterMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    PatientRegisterMutation,
+    PatientRegisterMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    PatientRegisterMutation,
+    PatientRegisterMutationVariables
+  >(PatientRegisterDocument, options);
 }
-    `;
-export type DoctorRegisterMutationFn = Apollo.MutationFunction<DoctorRegisterMutation, DoctorRegisterMutationVariables>;
+export type PatientRegisterMutationHookResult = ReturnType<
+  typeof usePatientRegisterMutation
+>;
+export type PatientRegisterMutationResult =
+  Apollo.MutationResult<PatientRegisterMutation>;
+export type PatientRegisterMutationOptions = Apollo.BaseMutationOptions<
+  PatientRegisterMutation,
+  PatientRegisterMutationVariables
+>;
+export const DoctorRegisterDocument = gql`
+  mutation DoctorRegister($input: DoctorInput!) {
+    doctorRegister(input: $input) {
+      accessToken
+    }
+  }
+`;
+export type DoctorRegisterMutationFn = Apollo.MutationFunction<
+  DoctorRegisterMutation,
+  DoctorRegisterMutationVariables
+>;
 
 /**
  * __useDoctorRegisterMutation__
@@ -418,49 +591,80 @@ export type DoctorRegisterMutationFn = Apollo.MutationFunction<DoctorRegisterMut
  *   },
  * });
  */
-export function useDoctorRegisterMutation(baseOptions?: Apollo.MutationHookOptions<DoctorRegisterMutation, DoctorRegisterMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DoctorRegisterMutation, DoctorRegisterMutationVariables>(DoctorRegisterDocument, options);
-      }
-export type DoctorRegisterMutationHookResult = ReturnType<typeof useDoctorRegisterMutation>;
-export type DoctorRegisterMutationResult = Apollo.MutationResult<DoctorRegisterMutation>;
-export type DoctorRegisterMutationOptions = Apollo.BaseMutationOptions<DoctorRegisterMutation, DoctorRegisterMutationVariables>;
-export const SingleUploadDocument = gql`
-    mutation SingleUpload($file: Upload!) {
-  singleUpload(file: $file)
+export function useDoctorRegisterMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DoctorRegisterMutation,
+    DoctorRegisterMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DoctorRegisterMutation,
+    DoctorRegisterMutationVariables
+  >(DoctorRegisterDocument, options);
 }
-    `;
-export type SingleUploadMutationFn = Apollo.MutationFunction<SingleUploadMutation, SingleUploadMutationVariables>;
+export type DoctorRegisterMutationHookResult = ReturnType<
+  typeof useDoctorRegisterMutation
+>;
+export type DoctorRegisterMutationResult =
+  Apollo.MutationResult<DoctorRegisterMutation>;
+export type DoctorRegisterMutationOptions = Apollo.BaseMutationOptions<
+  DoctorRegisterMutation,
+  DoctorRegisterMutationVariables
+>;
+export const UploadFileDocument = gql`
+  mutation UploadFile($file: Upload!) {
+    uploadFile(file: $file)
+  }
+`;
+export type UploadFileMutationFn = Apollo.MutationFunction<
+  UploadFileMutation,
+  UploadFileMutationVariables
+>;
 
 /**
- * __useSingleUploadMutation__
+ * __useUploadFileMutation__
  *
- * To run a mutation, you first call `useSingleUploadMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSingleUploadMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useUploadFileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUploadFileMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [singleUploadMutation, { data, loading, error }] = useSingleUploadMutation({
+ * const [uploadFileMutation, { data, loading, error }] = useUploadFileMutation({
  *   variables: {
  *      file: // value for 'file'
  *   },
  * });
  */
-export function useSingleUploadMutation(baseOptions?: Apollo.MutationHookOptions<SingleUploadMutation, SingleUploadMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<SingleUploadMutation, SingleUploadMutationVariables>(SingleUploadDocument, options);
-      }
-export type SingleUploadMutationHookResult = ReturnType<typeof useSingleUploadMutation>;
-export type SingleUploadMutationResult = Apollo.MutationResult<SingleUploadMutation>;
-export type SingleUploadMutationOptions = Apollo.BaseMutationOptions<SingleUploadMutation, SingleUploadMutationVariables>;
-export const HelloDocument = gql`
-    query Hello {
-  hello
+export function useUploadFileMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UploadFileMutation,
+    UploadFileMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<UploadFileMutation, UploadFileMutationVariables>(
+    UploadFileDocument,
+    options
+  );
 }
-    `;
+export type UploadFileMutationHookResult = ReturnType<
+  typeof useUploadFileMutation
+>;
+export type UploadFileMutationResult =
+  Apollo.MutationResult<UploadFileMutation>;
+export type UploadFileMutationOptions = Apollo.BaseMutationOptions<
+  UploadFileMutation,
+  UploadFileMutationVariables
+>;
+export const HelloDocument = gql`
+  query Hello {
+    hello
+  }
+`;
 
 /**
  * __useHelloQuery__
@@ -477,40 +681,53 @@ export const HelloDocument = gql`
  *   },
  * });
  */
-export function useHelloQuery(baseOptions?: Apollo.QueryHookOptions<HelloQuery, HelloQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<HelloQuery, HelloQueryVariables>(HelloDocument, options);
-      }
-export function useHelloLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<HelloQuery, HelloQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<HelloQuery, HelloQueryVariables>(HelloDocument, options);
-        }
+export function useHelloQuery(
+  baseOptions?: Apollo.QueryHookOptions<HelloQuery, HelloQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<HelloQuery, HelloQueryVariables>(
+    HelloDocument,
+    options
+  );
+}
+export function useHelloLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<HelloQuery, HelloQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<HelloQuery, HelloQueryVariables>(
+    HelloDocument,
+    options
+  );
+}
 export type HelloQueryHookResult = ReturnType<typeof useHelloQuery>;
 export type HelloLazyQueryHookResult = ReturnType<typeof useHelloLazyQuery>;
-export type HelloQueryResult = Apollo.QueryResult<HelloQuery, HelloQueryVariables>;
+export type HelloQueryResult = Apollo.QueryResult<
+  HelloQuery,
+  HelloQueryVariables
+>;
 export const MeDocument = gql`
-    query Me {
-  me {
-    user {
-      ... on Patient {
-        id
-        name
-        email
-        gender
-        blood_group
+  query Me {
+    me {
+      user {
+        ... on Patient {
+          id
+          name
+          email
+          gender
+          blood_group
+        }
+        ... on Doctor {
+          name
+          id
+          specialities
+          email
+          designation
+        }
       }
-      ... on Doctor {
-        name
-        id
-        specialities
-        email
-        designation
-      }
+      userType
     }
-    userType
   }
-}
-    `;
+`;
 
 /**
  * __useMeQuery__
@@ -527,51 +744,197 @@ export const MeDocument = gql`
  *   },
  * });
  */
-export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
-      }
-export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
-        }
+export function useMeQuery(
+  baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+}
+export function useMeLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+}
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
-export const RecordsDocument = gql`
-    query Records {
-  records {
-    id
-    title
-    category
-    description
+export const GetPatientsDocument = gql`
+  query GetPatients {
+    getPatients {
+      id
+      name
+      email
+      gender
+      blood_group
+    }
   }
-}
-    `;
+`;
 
 /**
- * __useRecordsQuery__
+ * __useGetPatientsQuery__
  *
- * To run a query within a React component, call `useRecordsQuery` and pass it any options that fit your needs.
- * When your component renders, `useRecordsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetPatientsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPatientsQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useRecordsQuery({
+ * const { data, loading, error } = useGetPatientsQuery({
  *   variables: {
  *   },
  * });
  */
-export function useRecordsQuery(baseOptions?: Apollo.QueryHookOptions<RecordsQuery, RecordsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<RecordsQuery, RecordsQueryVariables>(RecordsDocument, options);
-      }
-export function useRecordsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RecordsQuery, RecordsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<RecordsQuery, RecordsQueryVariables>(RecordsDocument, options);
-        }
-export type RecordsQueryHookResult = ReturnType<typeof useRecordsQuery>;
-export type RecordsLazyQueryHookResult = ReturnType<typeof useRecordsLazyQuery>;
-export type RecordsQueryResult = Apollo.QueryResult<RecordsQuery, RecordsQueryVariables>;
+export function useGetPatientsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    GetPatientsQuery,
+    GetPatientsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<GetPatientsQuery, GetPatientsQueryVariables>(
+    GetPatientsDocument,
+    options
+  );
+}
+export function useGetPatientsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetPatientsQuery,
+    GetPatientsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<GetPatientsQuery, GetPatientsQueryVariables>(
+    GetPatientsDocument,
+    options
+  );
+}
+export type GetPatientsQueryHookResult = ReturnType<typeof useGetPatientsQuery>;
+export type GetPatientsLazyQueryHookResult = ReturnType<
+  typeof useGetPatientsLazyQuery
+>;
+export type GetPatientsQueryResult = Apollo.QueryResult<
+  GetPatientsQuery,
+  GetPatientsQueryVariables
+>;
+export const GetPatientRecordsDocument = gql`
+  query GetPatientRecords($patientId: String!) {
+    getPatientRecords(patientId: $patientId) {
+      id
+      title
+      description
+      category
+      isAuthorized
+    }
+  }
+`;
+
+/**
+ * __useGetPatientRecordsQuery__
+ *
+ * To run a query within a React component, call `useGetPatientRecordsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPatientRecordsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPatientRecordsQuery({
+ *   variables: {
+ *      patientId: // value for 'patientId'
+ *   },
+ * });
+ */
+export function useGetPatientRecordsQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    GetPatientRecordsQuery,
+    GetPatientRecordsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    GetPatientRecordsQuery,
+    GetPatientRecordsQueryVariables
+  >(GetPatientRecordsDocument, options);
+}
+export function useGetPatientRecordsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetPatientRecordsQuery,
+    GetPatientRecordsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    GetPatientRecordsQuery,
+    GetPatientRecordsQueryVariables
+  >(GetPatientRecordsDocument, options);
+}
+export type GetPatientRecordsQueryHookResult = ReturnType<
+  typeof useGetPatientRecordsQuery
+>;
+export type GetPatientRecordsLazyQueryHookResult = ReturnType<
+  typeof useGetPatientRecordsLazyQuery
+>;
+export type GetPatientRecordsQueryResult = Apollo.QueryResult<
+  GetPatientRecordsQuery,
+  GetPatientRecordsQueryVariables
+>;
+export const GetRecordsDocument = gql`
+  query GetRecords {
+    getRecords {
+      id
+      title
+      description
+      category
+    }
+  }
+`;
+
+/**
+ * __useGetRecordsQuery__
+ *
+ * To run a query within a React component, call `useGetRecordsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRecordsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRecordsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetRecordsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    GetRecordsQuery,
+    GetRecordsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<GetRecordsQuery, GetRecordsQueryVariables>(
+    GetRecordsDocument,
+    options
+  );
+}
+export function useGetRecordsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetRecordsQuery,
+    GetRecordsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<GetRecordsQuery, GetRecordsQueryVariables>(
+    GetRecordsDocument,
+    options
+  );
+}
+export type GetRecordsQueryHookResult = ReturnType<typeof useGetRecordsQuery>;
+export type GetRecordsLazyQueryHookResult = ReturnType<
+  typeof useGetRecordsLazyQuery
+>;
+export type GetRecordsQueryResult = Apollo.QueryResult<
+  GetRecordsQuery,
+  GetRecordsQueryVariables
+>;

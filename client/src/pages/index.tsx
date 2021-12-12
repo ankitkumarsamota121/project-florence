@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import { withApollo } from '../utils/withApollo';
+// import { withApollo } from '../utils/withApollo';
 import { useHelloQuery } from '../generated/graphql';
 import { get } from 'lodash';
 import { Heading } from '@chakra-ui/react';

@@ -1,15 +1,6 @@
 import React, { useEffect } from 'react';
-import { Formik, Form, Field } from 'formik';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Radio,
-  RadioGroup,
-  Spacer,
-  Stack,
-} from '@chakra-ui/react';
+import { Formik, Form } from 'formik';
+import { Button, Spacer } from '@chakra-ui/react';
 import Wrapper from '../components/Wrapper';
 import InputField from '../components/InputField';
 import { useLoginMutation } from '../generated/graphql';
@@ -38,7 +29,7 @@ const Login: React.FC<LoginProps> = () => {
         onSubmit={async (values) => {
           console.log(values);
           const { data, errors } = await login({
-            variables: { ...values, userType: 'patient' },
+            variables: { ...values },
           });
 
           if (errors) {

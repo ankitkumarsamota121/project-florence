@@ -1,0 +1,3 @@
+mutation AddPatient($patientEmail: String!) {
+  addPatient(patientEmail: $patientEmail)
+}

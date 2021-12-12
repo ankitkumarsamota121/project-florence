@@ -20,7 +20,7 @@ import { DoctorPatient } from '../entities/DoctorPatient';
 export class ConsentRequestResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
-  async createRequest(
+  async createConsentRequest(
     @Arg('patientId') patientId: string,
     @Arg('recordId') recordId: number,
     @Arg('content') content: string,
@@ -65,7 +65,7 @@ export class ConsentRequestResolver {
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
-  async deleteRequest(
+  async deleteConsentRequest(
     @Arg('id', () => Int) id: number,
     @Ctx() { payload }: MyContext
   ) {

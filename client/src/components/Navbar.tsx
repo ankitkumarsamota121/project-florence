@@ -60,7 +60,7 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
           </MenuButton>
           <MenuList>
             <MenuItem>
-              <NextLink href={`/profile/${userInfo?.userType}`}>
+              <NextLink href={`/profile/${userInfo?.userType?.toLowerCase()}`}>
                 <Box w='100%'>Profile</Box>
               </NextLink>
             </MenuItem>

@@ -22,6 +22,7 @@ import { createWriteStream } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import { DOCTOR } from '../constants/userType';
+import { DoctorPatient } from '../entities/DoctorPatient';
 
 @InputType()
 class RecordInput {
@@ -48,7 +49,7 @@ class RecordResponse {
 export class RecordResolver {
   @Query(() => [Record])
   @UseMiddleware(isAuthenticated)
-  async records(@Ctx() { payload }: MyContext): Promise<Record[]> {
+  async getRecords(@Ctx() { payload }: MyContext): Promise<Record[]> {
     // @Arg('cursor', () => String, { nullable: true }) cursor: string | null // @Arg('limit', () => Int) limit: number,
     // const recordRepo = getConnection().getRepository(Record);
     const records = await Record.find({ where: { patient: payload!.userId } });
@@ -57,7 +58,7 @@ export class RecordResolver {
 
   @Query(() => Record, { nullable: true })
   @UseMiddleware(isAuthenticated)
-  async record(
+  async getRecord(
     @Arg('id', () => Int) id: number,
     @Ctx() { payload }: MyContext
   ): Promise<Record> {
@@ -139,13 +140,18 @@ export class RecordResolver {
   ): Promise<Record> {
     let patient;
     if (userType === DOCTOR) {
-      console.log(patientId);
-      throw new Error('WORK IN PROGRESS!!!');
-    } else {
-      patient = await Patient.findOne({
-        where: { id: payload!.userId },
+      console.log('HIT HIT HIT HIT!!!');
+      const dpCnt = await DoctorPatient.count({
+        doctorId: payload!.userId,
+        patientId,
       });
+      patient = await Patient.findOne(patientId);
 
+      if (dpCnt === 0 || !patient) {
+        throw new UserInputError('No patient found with given ID!');
+      }
+    } else {
+      patient = await Patient.findOne(payload!.userId);
       if (!patient) {
         throw new UserInputError('No patient found with given ID!');
       }
@@ -166,7 +172,7 @@ export class RecordResolver {
   }
 
   @Mutation(() => Int)
-  async singleUpload(
+  async uploadFile(
     @Arg('file', () => GraphQLUpload)
     { createReadStream, filename }: FileUpload
   ) {

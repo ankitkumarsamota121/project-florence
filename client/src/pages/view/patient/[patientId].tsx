@@ -1,43 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import NextLink from 'next/link';
 import {
-  Box,
-  Button,
   Container,
   Grid,
   GridItem,
   Heading,
+  Box,
   Spinner,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
+  Button,
   Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from '@chakra-ui/react';
-import RecordsTable from '../../components/RecordsTable';
-import UserInfoTable from '../../components/UserInfoTable';
-import { useMeQuery, useGetRecordsQuery } from '../../generated/graphql';
-import { get } from 'lodash';
+import { filter, get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
+import React, { useState } from 'react';
+import NextLink from 'next/link';
+import RecordsTable from '../../../components/RecordsTable';
+import UserInfoTable from '../../../components/UserInfoTable';
+import {
+  useGetPatientRecordsQuery,
+  useGetPatientsQuery,
+} from '../../../generated/graphql';
 
-const PatientProfile = () => {
+interface Props {}
+
+const PatientInfo = (props: Props) => {
   const [loading, setLoading] = useState(false);
-  const { data: meData, loading: meLoading } = useMeQuery();
-  const userInfo = get(meData, 'me', null);
   const router = useRouter();
+  const patientId = router.query.patientId as string;
+
+  const { data: patientsData, loading: loadingPatients } = useGetPatientsQuery({
+    fetchPolicy: 'cache-first',
+  });
+  let patients = get(patientsData, 'getPatients', []);
+  let patient = filter(patients, (p) => p.id === patientId)[0];
 
   const {
     data: recordsData,
     loading: loadingRecords,
     refetch: refetchRecords,
-  } = useGetRecordsQuery();
-  let records = get(recordsData, 'getRecords', []);
-
-  useEffect(() => {
-    const curr = router.pathname;
-    const path = `/profile/${userInfo?.userType.toLowerCase()}`;
-    if (curr !== path) router.push('/');
-  }, [meLoading, loadingRecords]);
+  } = useGetPatientRecordsQuery({ variables: { patientId } });
+  let records = get(recordsData, 'getPatientRecords', []);
 
   const refetchHandler = async () => {
     setLoading(true);
@@ -53,12 +57,12 @@ const PatientProfile = () => {
           <Heading size='xl' fontWeight='medium'>
             User Profile
           </Heading>
-          <Box boxShadow='md' borderRadius={8} centerContent p={4}>
-            {meLoading ? (
+          <Box boxShadow='md' borderRadius={8} p={4}>
+            {loadingPatients || loading ? (
               <Spinner />
             ) : (
               <>
-                <UserInfoTable user={userInfo?.user} />
+                <UserInfoTable user={patient} />
                 <Button
                   colorScheme='teal'
                   variant='outline'
@@ -77,7 +81,6 @@ const PatientProfile = () => {
           <Tabs isFitted colorScheme='teal'>
             <TabList>
               <Tab _focus={{ outline: 'none' }}>Records</Tab>
-              <Tab _focus={{ outline: 'none' }}>Notifications</Tab>
             </TabList>
 
             <TabPanels>
@@ -87,14 +90,11 @@ const PatientProfile = () => {
                 ) : (
                   <RecordsTable records={records} />
                 )}
-                <NextLink href={`/add/record/${userInfo?.user.id}`}>
+                <NextLink href={`/add/record/${patientId}`}>
                   <Button colorScheme='teal' mt={4} width='200px' height='50px'>
                     Add Record
                   </Button>
                 </NextLink>
-              </TabPanel>
-              <TabPanel>
-                <h1>Notifications</h1>
               </TabPanel>
             </TabPanels>
           </Tabs>
@@ -104,4 +104,4 @@ const PatientProfile = () => {
   );
 };
 
-export default PatientProfile;
+export default PatientInfo;

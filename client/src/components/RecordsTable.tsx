@@ -1,10 +1,16 @@
 import { Table, Thead, Tr, Th, Tbody } from '@chakra-ui/react';
 import React from 'react';
-import { Record as RecordType } from '../generated/graphql';
 import Record from './Record';
 
 interface RecordsTableProps {
-  records: RecordType[];
+  records: {
+    __typename?: 'Record' | undefined;
+    category: string;
+    description: string;
+    id: string;
+    title: string;
+    isAuthorized?: boolean;
+  }[];
 }
 
 const RecordsTable = ({ records }: RecordsTableProps) => {
@@ -25,6 +31,7 @@ const RecordsTable = ({ records }: RecordsTableProps) => {
             title={record.title}
             category={record.category}
             description={record.description}
+            isAuthorized={record.isAuthorized || true}
           />
         ))}
       </Tbody>

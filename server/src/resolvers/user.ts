@@ -23,7 +23,7 @@ import { isAuthenticated } from '../middlewares/isAuthenticated';
 // Entities
 import { Patient } from '../entities/Patient';
 import { Doctor } from '../entities/Doctor';
-import { PATIENT } from '../constants/userType';
+import { DOCTOR, PATIENT } from '../constants/userType';
 
 @ObjectType()
 class UserResponse {
@@ -79,26 +79,29 @@ class DoctorInput extends UserInput {
 
 @Resolver()
 export class UserResolver {
-  @Query(() => [Patient])
-  async patients() {
-    return await Patient.find();
-  }
+  /**
+   * TODO: Remove the patients and doctors queries
+   */
+  // @Query(() => [Patient])
+  // async patients() {
+  //   return await Patient.find();
+  // }
 
-  @Query(() => [Doctor])
-  async doctors() {
-    return await Doctor.find();
-  }
+  // @Query(() => [Doctor])
+  // async doctors() {
+  //   return await Doctor.find();
+  // }
 
   @Query(() => MeResponse)
   @UseMiddleware(isAuthenticated)
   async me(@Ctx() { payload }: MyContext) {
     const patient = await Patient.findOne(payload!.userId);
     if (patient) {
-      return { user: patient, userType: 'patient' };
+      return { user: patient, userType: PATIENT };
     }
 
     const doctor = await Doctor.findOne(payload!.userId);
-    return { user: doctor, userType: 'doctor' };
+    return { user: doctor, userType: DOCTOR };
   }
 
   @Mutation(() => UserResponse)

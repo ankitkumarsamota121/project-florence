@@ -25,6 +25,7 @@ import { isAuthorized } from '../middlewares/isAuthorized';
 // Utils
 // import { FieldError } from '../utils/FieldError';
 import { UserInputError } from 'apollo-server-express';
+import { DoctorRecord } from '../entities/DoctorRecord';
 
 @ObjectType()
 class BasicRecordResponse {
@@ -39,6 +40,9 @@ class BasicRecordResponse {
 
   @Field()
   description: string;
+
+  @Field(() => Boolean)
+  isAuthorized: Promise<boolean>;
 }
 
 @Resolver(Doctor)
@@ -69,30 +73,25 @@ export class DoctorResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
   async addPatient(
-    @Arg('patientId') patientId: string,
+    @Arg('patientEmail') patientEmail: string,
     @Ctx() { payload }: MyContext
   ) {
+    const patient = await Patient.findOne({ email: patientEmail });
+    if (!patient) {
+      throw new UserInputError('No Patient found with given ID!');
+    }
+
     const dpCnt = await DoctorPatient.count({
       doctorId: payload!.userId,
-      patientId,
+      patientId: patient.id,
     });
     if (dpCnt !== 0) {
       throw new UserInputError('Patient already exists!');
     }
 
-    const doctorCnt = await Doctor.count({ id: payload!.userId });
-    if (doctorCnt === 0) {
-      throw new UserInputError('No doctor found with given ID!');
-    }
-
-    const patientCnt = await Patient.count({ id: patientId });
-    if (patientCnt === 0) {
-      throw new UserInputError('No Patient found with given ID!');
-    }
-
     await DoctorPatient.create({
       doctorId: payload!.userId,
-      patientId,
+      patientId: patient.id,
     }).save();
     return true;
   }
@@ -124,13 +123,38 @@ export class DoctorResolver {
   @Query(() => [BasicRecordResponse])
   @UseMiddleware(isAuthenticated)
   async getPatientRecords(
-    @Arg('patientId') patientId: string
+    @Arg('patientId') patientId: string,
+    @Ctx() { payload }: MyContext
   ): Promise<BasicRecordResponse[]> {
     const records = await Record.find({
       where: { patient: await Patient.findOne({ id: patientId }) },
       select: ['id', 'title', 'category', 'description'],
     });
-    return records;
+
+    const checkAccess = records.map(async (record) => {
+      let isAuthorized = false;
+      const drCnt = await DoctorRecord.count({
+        doctorId: payload!.userId,
+        recordId: record.id,
+      });
+      if (drCnt !== 0) {
+        isAuthorized = true;
+      }
+
+      return isAuthorized;
+    });
+
+    const res: BasicRecordResponse[] = records.map((record, idx) => {
+      return {
+        id: record.id,
+        category: record.category,
+        description: record.description,
+        title: record.title,
+        isAuthorized: checkAccess[idx],
+      };
+    });
+
+    return res;
   }
 
   /**

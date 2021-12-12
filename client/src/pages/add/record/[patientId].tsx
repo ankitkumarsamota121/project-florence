@@ -1,16 +1,12 @@
 import axios from 'axios';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import NextLink from 'next/link';
 import {
   Spacer,
-  Flex,
   Button,
   Textarea,
   FormControl,
-  FormErrorMessage,
   FormLabel,
-  Input,
-  Text,
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
@@ -19,12 +15,12 @@ import InputField from '../../../components/InputField';
 import SelectField from '../../../components/SelectField';
 import Wrapper from '../../../components/Wrapper';
 import {
-  RecordsDocument,
   useCreateRecordMutation,
   useMeQuery,
 } from '../../../generated/graphql';
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
+import { DOCTOR } from '../../../constants/userType';
 
 const PatientRecord = () => {
   const [uploading, setUploading] = useState(false);
@@ -33,10 +29,10 @@ const PatientRecord = () => {
   const router = useRouter();
 
   const { data: meData } = useMeQuery({
-    nextFetchPolicy: 'cache-first',
+    fetchPolicy: 'cache-first',
   });
   const userInfo = get(meData, 'me', null);
-  const patientId = router.query.pid as string;
+  const patientId = router.query.patientId as string;
 
   const recordCategories = ['AB', 'BCD', 'ED'];
 
@@ -44,7 +40,7 @@ const PatientRecord = () => {
     const formData = new FormData();
     formData.append(
       'operations',
-      '{ "query": "mutation ($file: Upload!) { singleUpload(file: $file) }", "variables": { "file": null } }'
+      '{ "query": "mutation ($file: Upload!) { uploadFile(file: $file) }", "variables": { "file": null } }'
     );
     formData.append('map', '{ "0": ["variables.file"] }');
     formData.append('0', file);
@@ -55,7 +51,7 @@ const PatientRecord = () => {
         data: { data },
       } = await axios.post(`${url}/graphql`, formData);
       setUploading(false);
-      return data?.singleUpload;
+      return data?.uploadFile;
     } catch (error) {
       console.error(error);
       setError('Error occured in uploading!');
@@ -65,7 +61,13 @@ const PatientRecord = () => {
 
   return (
     <Wrapper variant='small'>
-      <NextLink href={`/profile/${userInfo?.userType.toLowerCase()}`}>
+      <NextLink
+        href={
+          userInfo?.userType.toUpperCase() === DOCTOR
+            ? `/view/patient/${patientId}`
+            : `/profile/${userInfo?.userType.toLowerCase()}`
+        }
+      >
         <Button>Go Back</Button>
       </NextLink>
       {error && (
@@ -92,6 +94,7 @@ const PatientRecord = () => {
 
           try {
             const attachmentId = await uploadFile(attachmentRef.files[0]);
+            console.log(attachmentId);
             const { data, errors } = await createRecord({
               variables: {
                 input: values,
@@ -99,7 +102,7 @@ const PatientRecord = () => {
                 userType: userInfo!.userType.toUpperCase(),
                 patientId: patientId || undefined,
               },
-              refetchQueries: [RecordsDocument],
+              refetchQueries: ['GetRecords', 'GetPatientRecords'],
             });
 
             if (errors) {
@@ -107,9 +110,14 @@ const PatientRecord = () => {
               setError('Some error occurred in creating Record!');
             } else {
               console.log(data);
-              router.push(`/profile/${userInfo?.userType.toLowerCase()}`);
+              if (userInfo?.userType.toUpperCase() === DOCTOR) {
+                router.push(`/view/patient/${patientId}`);
+              } else {
+                router.push(`/profile/${userInfo?.userType.toLowerCase()}`);
+              }
             }
           } catch (error) {
+            // console.log(error.networkError.result.errors[0].message);
             console.log(error);
             setError('Some error occurred in executing query!');
           }

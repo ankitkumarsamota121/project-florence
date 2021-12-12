@@ -1,8 +1,8 @@
-query Records {
-  records {
+query GetRecords {
+  getRecords {
     id
     title
-    category
     description
+    category
   }
 }

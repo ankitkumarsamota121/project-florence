@@ -11,25 +11,43 @@ import {
   TabPanels,
   TabPanel,
   Spinner,
+  Spacer,
 } from '@chakra-ui/react';
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import AddPatient from '../../components/AddPatient';
+import PatientsTable from '../../components/PatientsTable';
 import UserInfoTable from '../../components/UserInfoTable';
-import { useMeQuery } from '../../generated/graphql';
+import { useMeQuery, useGetPatientsQuery } from '../../generated/graphql';
 
 interface DoctorProfileProps {}
 
 const DoctorProfile = (props: DoctorProfileProps) => {
+  const [loading, setLoading] = useState(false);
   const { data: meData, loading: meLoading } = useMeQuery();
   const userInfo = get(meData, 'me', null);
   const router = useRouter();
+
+  const {
+    data: patientsData,
+    loading: loadingPatients,
+    refetch: refetchPatients,
+  } = useGetPatientsQuery();
+  let patients = get(patientsData, 'getPatients', []);
 
   useEffect(() => {
     const curr = router.pathname;
     const path = `/profile/${userInfo?.userType.toLowerCase()}`;
     if (curr !== path) router.push('/');
   }, [meLoading]);
+
+  const refetchHandler = async () => {
+    setLoading(true);
+    const { data: patientsData } = await refetchPatients();
+    patients = get(patientsData, 'getPatients', []);
+    setLoading(false);
+  };
 
   return (
     <Container maxW='container.xl'>
@@ -38,7 +56,7 @@ const DoctorProfile = (props: DoctorProfileProps) => {
           <Heading size='xl' fontWeight='medium'>
             User Profile
           </Heading>
-          <Box boxShadow='md' borderRadius={8} centerContent p={4}>
+          <Box boxShadow='md' borderRadius={8} p={4}>
             {meLoading ? (
               <Spinner />
             ) : (
@@ -66,11 +84,12 @@ const DoctorProfile = (props: DoctorProfileProps) => {
 
             <TabPanels>
               <TabPanel>
-                {/* <RecordsTable /> */}
+                <PatientsTable patients={patients} />
                 {/* <Button colorScheme='teal' mt={4} width='200px' height='50px'>
-                  Add Record
+                  Add Patient
                 </Button> */}
-                <h1>Patients</h1>
+                <Spacer mt={4} />
+                <AddPatient refetchHandler={refetchHandler} />
               </TabPanel>
               {/* <TabPanel>
                 <h1>Notifications</h1>

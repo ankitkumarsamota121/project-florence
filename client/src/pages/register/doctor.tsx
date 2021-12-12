@@ -5,17 +5,15 @@ import Wrapper from '../../components/Wrapper';
 import InputField from '../../components/InputField';
 import SelectField from '../../components/SelectField';
 import { useDoctorRegisterMutation } from '../../generated/graphql';
-import { getToken, setToken } from '../../utils/tokenManager';
-import { useQuery } from '@apollo/client';
+import { setToken, tokenVar } from '../../utils/tokenManager';
+import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/dist/client/router';
 
 interface DoctorRegisterProps {}
 
 const DoctorRegister: React.FC<DoctorRegisterProps> = () => {
   const router = useRouter();
-  const {
-    data: { token },
-  } = useQuery(getToken);
+  const token = useReactiveVar(tokenVar);
 
   useEffect(() => {
     if (token) router.push('/');
