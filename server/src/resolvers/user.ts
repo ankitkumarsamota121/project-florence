@@ -120,9 +120,13 @@ export class UserResolver {
       await Patient.save(user);
 
       return {
-        accessToken: sign({ userId: user.id }, 'MySecretKey', {
-          expiresIn: '15d',
-        }),
+        accessToken: sign(
+          { userId: user.id, userType: PATIENT },
+          'MySecretKey',
+          {
+            expiresIn: '15d',
+          }
+        ),
       };
     } catch (err) {
       throw new ApolloError(err);
@@ -145,9 +149,13 @@ export class UserResolver {
       await Doctor.save(user);
 
       return {
-        accessToken: sign({ userId: user.id }, 'MySecretKey', {
-          expiresIn: '15d',
-        }),
+        accessToken: sign(
+          { userId: user.id, userType: DOCTOR },
+          'MySecretKey',
+          {
+            expiresIn: '15d',
+          }
+        ),
       };
     } catch (err) {
       throw new ApolloError(err);
@@ -178,7 +186,7 @@ export class UserResolver {
     }
 
     return {
-      accessToken: sign({ userId: user.id }, 'MySecretKey', {
+      accessToken: sign({ userId: user.id, userType }, 'MySecretKey', {
         expiresIn: '15d',
       }),
     };

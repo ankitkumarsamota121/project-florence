@@ -1,21 +1,22 @@
 import { Table, Tbody, Tr, Td } from '@chakra-ui/react';
 import React from 'react';
-import { User } from '../generated/graphql';
+import { User, Record } from '../generated/graphql';
 
 interface Props {
-  user?: User;
+  data: User | Record | undefined;
+  variant?: string;
 }
 
-const UserInfoTable = ({ user }: Props) => {
+const InfoTable = ({ data, variant }: Props) => {
   return (
-    <Table variant='simple'>
+    <Table variant={variant || 'simple'}>
       <Tbody>
-        {user &&
-          Object.entries(user).map((key, value) =>
-            key[0] === '__typename' ? (
+        {data &&
+          Object.entries(data).map((key, idx) => {
+            return key[0] === '__typename' ? (
               <></>
             ) : (
-              <Tr key={value}>
+              <Tr key={idx}>
                 <Td fontWeight='bold' px={2} py={4}>
                   {key[0].toUpperCase().replace('_', ' ')}
                 </Td>
@@ -23,11 +24,11 @@ const UserInfoTable = ({ user }: Props) => {
                   {key[1]}
                 </Td>
               </Tr>
-            )
-          )}
+            );
+          })}
       </Tbody>
     </Table>
   );
 };
 
-export default UserInfoTable;
+export default InfoTable;

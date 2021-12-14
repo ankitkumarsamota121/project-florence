@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 export type MyContext = {
   req: Request;
   res: Response;
-  payload?: { userId: string };
+  payload?: { userId: string; userType: string };
   // userLoader: ReturnType<typeof createUserLoader>;
   // updootLoader: ReturnType<typeof createUpdootLoader>;
 };

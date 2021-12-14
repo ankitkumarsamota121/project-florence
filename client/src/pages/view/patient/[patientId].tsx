@@ -17,7 +17,7 @@ import { useRouter } from 'next/dist/client/router';
 import React, { useState } from 'react';
 import NextLink from 'next/link';
 import RecordsTable from '../../../components/RecordsTable';
-import UserInfoTable from '../../../components/UserInfoTable';
+import InfoTable from '../../../components/InfoTable';
 import {
   useGetPatientRecordsQuery,
   useGetPatientsQuery,
@@ -42,6 +42,7 @@ const PatientInfo = (props: Props) => {
     refetch: refetchRecords,
   } = useGetPatientRecordsQuery({ variables: { patientId } });
   let records = get(recordsData, 'getPatientRecords', []);
+  console.log(records);
 
   const refetchHandler = async () => {
     setLoading(true);
@@ -62,7 +63,7 @@ const PatientInfo = (props: Props) => {
               <Spinner />
             ) : (
               <>
-                <UserInfoTable user={patient} />
+                <InfoTable data={patient} />
                 <Button
                   colorScheme='teal'
                   variant='outline'
@@ -88,7 +89,7 @@ const PatientInfo = (props: Props) => {
                 {loadingRecords || loading ? (
                   <Spinner />
                 ) : (
-                  <RecordsTable records={records} />
+                  <RecordsTable patientId={patientId} records={records} />
                 )}
                 <NextLink href={`/add/record/${patientId}`}>
                   <Button colorScheme='teal' mt={4} width='200px' height='50px'>

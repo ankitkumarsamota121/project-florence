@@ -17,3 +17,19 @@ query GetPatientRecords($patientId: String!) {
     isAuthorized
   }
 }
+
+query GetConsentRequests {
+  getConsentRequests {
+    id
+    content
+    doctor {
+      id
+      name
+    }
+    record {
+      id
+    }
+  }
+}
+
+

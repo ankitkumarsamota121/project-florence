@@ -30,7 +30,7 @@ import { DoctorRecord } from '../entities/DoctorRecord';
 @ObjectType()
 class BasicRecordResponse {
   @Field()
-  id: number;
+  id: string;
 
   @Field()
   title: string;
@@ -146,7 +146,7 @@ export class DoctorResolver {
 
     const res: BasicRecordResponse[] = records.map((record, idx) => {
       return {
-        id: record.id,
+        id: record.id.toString(),
         category: record.category,
         description: record.description,
         title: record.title,

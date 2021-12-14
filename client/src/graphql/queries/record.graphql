@@ -6,3 +6,18 @@ query GetRecords {
     category
   }
 }
+
+query GetRecord($getRecordId: Int!) {
+  getRecord(id: $getRecordId) {
+    record {
+      id
+      category
+      description
+      title
+    }
+    attachments {
+      id
+      url
+    }
+  }
+}

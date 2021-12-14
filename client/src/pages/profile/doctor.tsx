@@ -18,8 +18,8 @@ import { useRouter } from 'next/dist/client/router';
 import React, { useEffect, useState } from 'react';
 import AddPatient from '../../components/AddPatient';
 import PatientsTable from '../../components/PatientsTable';
-import UserInfoTable from '../../components/UserInfoTable';
 import { useMeQuery, useGetPatientsQuery } from '../../generated/graphql';
+import InfoTable from '../../components/InfoTable';
 
 interface DoctorProfileProps {}
 
@@ -61,7 +61,7 @@ const DoctorProfile = (props: DoctorProfileProps) => {
               <Spinner />
             ) : (
               <>
-                <UserInfoTable user={userInfo?.user} />
+                <InfoTable data={userInfo?.user} />
                 <Button
                   colorScheme='teal'
                   variant='outline'

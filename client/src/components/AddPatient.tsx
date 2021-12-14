@@ -9,7 +9,7 @@ import {
   Spacer,
 } from '@chakra-ui/react';
 import { Formik, Form } from 'formik';
-import React, { useRef, useState } from 'react';
+import React, { RefObject, useRef, useState } from 'react';
 import { useAddPatientMutation } from '../generated/graphql';
 import InputField from './InputField';
 
@@ -21,7 +21,7 @@ const AddPatient = ({ refetchHandler }: Props) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
-  const cancelRef = useRef();
+  const cancelRef = useRef() as RefObject<HTMLButtonElement>;
 
   const [addPatient] = useAddPatientMutation();
 

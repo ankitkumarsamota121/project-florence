@@ -1,0 +1,11 @@
+mutation CreateConsentRequest(
+  $content: String!
+  $recordId: Float!
+  $patientId: String!
+) {
+  createConsentRequest(
+    content: $content
+    recordId: $recordId
+    patientId: $patientId
+  )
+}

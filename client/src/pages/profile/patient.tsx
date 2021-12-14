@@ -8,20 +8,34 @@ import {
   GridItem,
   Heading,
   Spinner,
+  StackDivider,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
+  VStack,
+  Text,
+  Link,
+  Flex,
+  Stack,
+  Spacer,
 } from '@chakra-ui/react';
 import RecordsTable from '../../components/RecordsTable';
-import UserInfoTable from '../../components/UserInfoTable';
-import { useMeQuery, useGetRecordsQuery } from '../../generated/graphql';
+import {
+  useMeQuery,
+  useGetRecordsQuery,
+  useGetConsentRequestsQuery,
+  useGrantAccessMutation,
+  useDeleteConsentRequestMutation,
+} from '../../generated/graphql';
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
+import InfoTable from '../../components/InfoTable';
 
 const PatientProfile = () => {
   const [loading, setLoading] = useState(false);
+  const [loadingAccess, setLoadingAccess] = useState(false);
   const { data: meData, loading: meLoading } = useMeQuery();
   const userInfo = get(meData, 'me', null);
   const router = useRouter();
@@ -33,16 +47,48 @@ const PatientProfile = () => {
   } = useGetRecordsQuery();
   let records = get(recordsData, 'getRecords', []);
 
+  const {
+    data: requestsData,
+    loading: loadingRequests,
+    refetch: refetchRequests,
+  } = useGetConsentRequestsQuery();
+  let requests = get(requestsData, 'getConsentRequests', []);
+
   useEffect(() => {
     const curr = router.pathname;
     const path = `/profile/${userInfo?.userType.toLowerCase()}`;
     if (curr !== path) router.push('/');
-  }, [meLoading, loadingRecords]);
+  }, [meLoading, loadingRecords, loadingRequests]);
 
   const refetchHandler = async () => {
     setLoading(true);
     const { data: recordsData } = await refetchRecords();
     records = get(recordsData, 'getRecords', []);
+    const { data: requestsData } = await refetchRequests();
+    requests = get(requestsData, 'getConsentRequests', []);
+    setLoading(false);
+  };
+
+  const [grantAccess] = useGrantAccessMutation();
+  const [deleteConsentRequest] = useDeleteConsentRequestMutation();
+
+  const requestHandler = async (
+    consentRequestId: string,
+    recordId: string,
+    doctorId: string,
+    granted: boolean
+  ) => {
+    setLoading(true);
+    if (granted) {
+      await grantAccess({
+        variables: { recordId: parseInt(recordId), doctorId },
+      });
+    }
+    await deleteConsentRequest({
+      variables: { deleteConsentRequestId: parseInt(consentRequestId) },
+    });
+    await refetchHandler();
+
     setLoading(false);
   };
 
@@ -53,12 +99,12 @@ const PatientProfile = () => {
           <Heading size='xl' fontWeight='medium'>
             User Profile
           </Heading>
-          <Box boxShadow='md' borderRadius={8} centerContent p={4}>
+          <Box boxShadow='md' borderRadius={8} p={4}>
             {meLoading ? (
               <Spinner />
             ) : (
               <>
-                <UserInfoTable user={userInfo?.user} />
+                <InfoTable data={userInfo?.user} />
                 <Button
                   colorScheme='teal'
                   variant='outline'
@@ -85,7 +131,10 @@ const PatientProfile = () => {
                 {loadingRecords || loading ? (
                   <Spinner />
                 ) : (
-                  <RecordsTable records={records} />
+                  <RecordsTable
+                    patientId={userInfo!.user.id}
+                    records={records}
+                  />
                 )}
                 <NextLink href={`/add/record/${userInfo?.user.id}`}>
                   <Button colorScheme='teal' mt={4} width='200px' height='50px'>
@@ -94,7 +143,71 @@ const PatientProfile = () => {
                 </NextLink>
               </TabPanel>
               <TabPanel>
-                <h1>Notifications</h1>
+                {loadingRequests || loading ? (
+                  <Spinner />
+                ) : (
+                  <VStack
+                    divider={<StackDivider borderColor='gray.200' />}
+                    spacing={4}
+                    align='stretch'
+                  >
+                    {requests.map((r, idx) => (
+                      <Box p={5} shadow='md' borderWidth='1px' key={idx}>
+                        <Flex>
+                          <Box>
+                            <Text>
+                              <strong>{`Dr. ${r.doctor.name}`}</strong>
+                              {` has requested access to `}
+                              <NextLink href={`/view/record/${r.record.id}`}>
+                                <Link>
+                                  <strong>Record {r.record.id}</strong>
+                                </Link>
+                              </NextLink>
+                            </Text>
+                            <Text mt={4}>
+                              <strong>Message: </strong> {r.content}
+                            </Text>
+                          </Box>
+                          <Spacer />
+                          <Stack>
+                            {loadingAccess ? (
+                              <Spinner />
+                            ) : (
+                              <>
+                                <Button
+                                  colorScheme='teal'
+                                  onClick={() =>
+                                    requestHandler(
+                                      r.id,
+                                      r.record.id,
+                                      r.doctor.id,
+                                      true
+                                    )
+                                  }
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    requestHandler(
+                                      r.id,
+                                      r.record.id,
+                                      r.doctor.id,
+                                      false
+                                    )
+                                  }
+                                  colorScheme='red'
+                                >
+                                  Decline
+                                </Button>
+                              </>
+                            )}
+                          </Stack>
+                        </Flex>
+                      </Box>
+                    ))}
+                  </VStack>
+                )}
               </TabPanel>
             </TabPanels>
           </Tabs>

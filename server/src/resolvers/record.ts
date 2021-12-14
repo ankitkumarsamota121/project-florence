@@ -15,7 +15,7 @@ import {
 } from 'type-graphql';
 import { Record } from '../entities/Record';
 import { Attachment } from '../entities/Attachment';
-import { FieldError } from '../utils/FieldError';
+// import { FieldError } from '../utils/FieldError';
 import { UserInputError } from 'apollo-server-express';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { createWriteStream } from 'fs';
@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import { DOCTOR } from '../constants/userType';
 import { DoctorPatient } from '../entities/DoctorPatient';
+import { isAuthorized } from '../middlewares/isAuthorized';
 
 @InputType()
 class RecordInput {
@@ -38,11 +39,11 @@ class RecordInput {
 
 @ObjectType()
 class RecordResponse {
-  @Field(() => Record, { nullable: true })
-  record?: Record;
+  @Field(() => Record)
+  record: Record;
 
-  @Field(() => [FieldError], { nullable: true })
-  error?: FieldError;
+  @Field(() => [Attachment])
+  attachments: Attachment[];
 }
 
 @Resolver(Record)
@@ -56,21 +57,20 @@ export class RecordResolver {
     return records;
   }
 
-  @Query(() => Record, { nullable: true })
+  @Query(() => RecordResponse, { nullable: true })
   @UseMiddleware(isAuthenticated)
-  async getRecord(
-    @Arg('id', () => Int) id: number,
-    @Ctx() { payload }: MyContext
-  ): Promise<Record> {
+  @UseMiddleware(isAuthorized)
+  async getRecord(@Arg('id', () => Int) id: number): Promise<RecordResponse> {
     const record = await Record.findOne({
-      id: id,
-      patient: Patient.findOne({ where: { id: payload!.userId } }),
+      where: { id },
+      relations: ['attachments'],
     });
     if (!record) {
       throw new UserInputError('Not record found with given ID!');
     }
+    const attachments = await record.attachments;
 
-    return record;
+    return { record, attachments };
   }
 
   /**
@@ -85,23 +85,20 @@ export class RecordResolver {
     @Arg('title', () => String, { nullable: true }) title?: string,
     @Arg('category', () => String, { nullable: true }) category?: string,
     @Arg('description', () => String, { nullable: true }) description?: string
-  ): Promise<RecordResponse> {
+  ): Promise<Record> {
     const record = await Record.findOne({
       id: id,
       patient: Patient.findOne({ where: { id: payload!.userId } }),
     });
 
-    if (!record)
-      return {
-        error: new FieldError('record', 'No record found with the given id.'),
-      };
+    if (!record) throw new UserInputError('No record found with the given Id.');
 
     if (title) record.title = title;
     if (category) record.category = category;
     if (description) record.description = description;
 
     await Record.save(record);
-    return { record };
+    return record;
   }
 
   @Mutation(() => Boolean)
@@ -163,11 +160,10 @@ export class RecordResolver {
     }
 
     const record = await Record.create(input);
-
     record.patient = Promise.resolve(patient);
-    await Record.save(record);
-
     attachment.record = Promise.resolve(record);
+    await record.save();
+    await attachment.save();
     return record;
   }
 
