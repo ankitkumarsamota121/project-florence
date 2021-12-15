@@ -1,7 +1,3 @@
-mutation AddPatient($patientEmail: String!) {
-  addPatient(patientEmail: $patientEmail)
-}
-
 mutation GrantAccess($recordId: Float!, $doctorId: String!) {
   grantAccess(recordId: $recordId, doctorId: $doctorId)
 }

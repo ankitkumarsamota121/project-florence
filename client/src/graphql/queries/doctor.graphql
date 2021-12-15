@@ -1,0 +1,15 @@
+query GetPatients {
+  getPatients {
+    ...PatientInfo
+  }
+}
+
+query GetPatientRecords($patientId: String!) {
+  getPatientRecords(patientId: $patientId) {
+    id
+    title
+    description
+    category
+    isAuthorized
+  }
+}

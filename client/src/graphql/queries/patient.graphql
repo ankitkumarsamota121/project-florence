@@ -1,20 +1,6 @@
-query GetPatients {
-  getPatients {
-    id
-    name
-    email
-    gender
-    blood_group
-  }
-}
-
-query GetPatientRecords($patientId: String!) {
-  getPatientRecords(patientId: $patientId) {
-    id
-    title
-    description
-    category
-    isAuthorized
+query GetRecords {
+  getRecords {
+    ...RecordInfo
   }
 }
 
@@ -31,5 +17,3 @@ query GetConsentRequests {
     }
   }
 }
-
-

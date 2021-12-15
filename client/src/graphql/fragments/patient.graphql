@@ -1,0 +1,7 @@
+fragment PatientInfo on Patient {
+  id
+  name
+  email
+  gender
+  blood_group
+}

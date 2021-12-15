@@ -1,0 +1,6 @@
+fragment RecordInfo on Record {
+  id
+  category
+  description
+  title
+}

@@ -1,19 +1,7 @@
-query GetRecords {
-  getRecords {
-    id
-    title
-    description
-    category
-  }
-}
-
 query GetRecord($getRecordId: Int!) {
   getRecord(id: $getRecordId) {
     record {
-      id
-      category
-      description
-      title
+      ...RecordInfo
     }
     attachments {
       id

@@ -1,0 +1,7 @@
+fragment DoctorInfo on Doctor {
+  id
+  name
+  specialities
+  email
+  designation
+}

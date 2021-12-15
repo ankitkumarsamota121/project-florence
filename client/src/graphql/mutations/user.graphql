@@ -1,0 +1,17 @@
+mutation DoctorRegister($input: DoctorInput!) {
+  doctorRegister(input: $input) {
+    accessToken
+  }
+}
+
+mutation PatientRegister($input: PatientInput!) {
+  patientRegister(input: $input) {
+    accessToken
+  }
+}
+
+mutation Login($userType: String!, $password: String!, $email: String!) {
+  login(userType: $userType, password: $password, email: $email) {
+    accessToken
+  }
+}

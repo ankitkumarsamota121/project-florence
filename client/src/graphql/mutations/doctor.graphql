@@ -1,3 +1,7 @@
+mutation AddPatient($patientEmail: String!) {
+  addPatient(patientEmail: $patientEmail)
+}
+
 mutation CreateConsentRequest(
   $content: String!
   $recordId: Float!
