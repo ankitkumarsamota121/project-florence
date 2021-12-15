@@ -34,6 +34,7 @@ import { useRouter } from 'next/dist/client/router';
 import InfoTable from '../../components/InfoTable';
 
 const PatientProfile = () => {
+  // const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingAccess, setLoadingAccess] = useState(false);
   const { data: meData, loading: meLoading } = useMeQuery();

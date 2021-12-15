@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import { Button, Flex, Spacer } from '@chakra-ui/react';
 import Wrapper from '../../components/Wrapper';
@@ -8,10 +8,11 @@ import { usePatientRegisterMutation } from '../../generated/graphql';
 import { setToken, tokenVar } from '../../utils/tokenManager';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
+import ErrorDisplay from '../../components/ErrorDisplay';
+import * as Yup from 'yup';
 
-interface PatientRegisterProps {}
-
-const PatientRegister: React.FC<PatientRegisterProps> = () => {
+const PatientRegister = () => {
+  const [error, setError] = useState('');
   const router = useRouter();
   const token = useReactiveVar(tokenVar);
 
@@ -22,8 +23,24 @@ const PatientRegister: React.FC<PatientRegisterProps> = () => {
   const genders = ['Male', 'Female', 'Other'];
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const [patientRegister] = usePatientRegisterMutation();
+
+  const patientRegisterValidationSchema = Yup.object().shape({
+    name: Yup.string()
+      .min(2, 'Too Short!')
+      .max(50, 'Too Long!')
+      .required('Required'),
+    password: Yup.string()
+      .min(6, 'Too Short!')
+      .max(50, 'Too Long!')
+      .required('Required'),
+    email: Yup.string().email('Invalid email').required('Required'),
+    gender: Yup.string().oneOf(genders).required('Required!'),
+    blood_group: Yup.string().oneOf(bloodGroups).required('Required!'),
+  });
+
   return (
     <Wrapper variant='small'>
+      {error && <ErrorDisplay error={error} setError={setError} />}
       <Formik
         initialValues={{
           name: '',
@@ -32,15 +49,25 @@ const PatientRegister: React.FC<PatientRegisterProps> = () => {
           gender: '',
           blood_group: '',
         }}
-        onSubmit={async (values) => {
-          const { data, errors } = await patientRegister({
-            variables: { input: values },
-          });
+        validationSchema={patientRegisterValidationSchema}
+        onSubmit={async ({ name, email, password, gender, blood_group }) => {
+          try {
+            if (!name || !email || !password || !gender || !blood_group) {
+              throw new Error('Please enter information for all fields!');
+            }
+            const { data, errors } = await patientRegister({
+              variables: {
+                input: { name, email, password, gender, blood_group },
+              },
+            });
 
-          if (errors) {
-            console.log(errors);
-          } else {
-            setToken(data!.patientRegister.accessToken);
+            if (errors) {
+              setError(errors[0].message);
+            } else {
+              setToken(data!.patientRegister.accessToken);
+            }
+          } catch (error: any) {
+            setError(error.message);
           }
         }}
       >

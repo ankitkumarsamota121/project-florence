@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import { Button, Flex, Spacer } from '@chakra-ui/react';
 import Wrapper from '../../components/Wrapper';
@@ -8,16 +8,18 @@ import { useDoctorRegisterMutation } from '../../generated/graphql';
 import { setToken, tokenVar } from '../../utils/tokenManager';
 import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/dist/client/router';
+import * as Yup from 'yup';
+import ErrorDisplay from '../../components/ErrorDisplay';
 
-interface DoctorRegisterProps {}
-
-const DoctorRegister: React.FC<DoctorRegisterProps> = () => {
+const DoctorRegister = () => {
+  const [error, setError] = useState('');
   const router = useRouter();
   const token = useReactiveVar(tokenVar);
 
   useEffect(() => {
     if (token) router.push('/');
   }, [token]);
+  const [doctorRegister] = useDoctorRegisterMutation();
 
   const specialities = [
     'Surgery',
@@ -36,9 +38,24 @@ const DoctorRegister: React.FC<DoctorRegisterProps> = () => {
     'Surgeon',
     'Physical Assistant',
   ];
-  const [doctorRegister] = useDoctorRegisterMutation();
+
+  const doctorRegisterValidationSchema = Yup.object().shape({
+    name: Yup.string()
+      .min(2, 'Too Short!')
+      .max(50, 'Too Long!')
+      .required('Required'),
+    email: Yup.string().email('Invalid email').required('Required'),
+    password: Yup.string()
+      .min(6, 'Too Short!')
+      .max(50, 'Too Long!')
+      .required('Required'),
+    specialities: Yup.string().oneOf(specialities).required('Required!'),
+    designation: Yup.string().oneOf(designations).required('Required!'),
+  });
+
   return (
     <Wrapper variant='small'>
+      {error && <ErrorDisplay error={error} setError={setError} />}
       <Formik
         initialValues={{
           name: '',
@@ -47,15 +64,20 @@ const DoctorRegister: React.FC<DoctorRegisterProps> = () => {
           specialities: '',
           designation: '',
         }}
+        validationSchema={doctorRegisterValidationSchema}
         onSubmit={async (values) => {
-          const { data, errors } = await doctorRegister({
-            variables: { input: values },
-          });
+          try {
+            const { data, errors } = await doctorRegister({
+              variables: { input: values },
+            });
 
-          if (errors) {
-            console.log(errors);
-          } else {
-            setToken(data!.doctorRegister.accessToken);
+            if (errors) {
+              setError(errors[0].message);
+            } else {
+              setToken(data!.doctorRegister.accessToken);
+            }
+          } catch (error: any) {
+            setError(error.message);
           }
         }}
       >

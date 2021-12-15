@@ -1,12 +1,13 @@
 import { AppProps } from 'next/app';
 import { ChakraProvider, theme } from '@chakra-ui/react';
-import Navbar from '../components/Navbar';
 import { ApolloClient, ApolloProvider, HttpLink, from } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 import { cache } from '../utils/cache';
 import { tokenVar } from '../utils/tokenManager';
 import validateToken from '../utils/validateToken';
+
+import dynamic from 'next/dynamic';
 
 const httpLink = new HttpLink({
   uri: 'http://localhost:4000/graphql',
@@ -25,19 +26,23 @@ const authLink = setContext((_, { headers }) => {
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)
-    graphQLErrors.forEach(({ message, locations, path }) =>
+    graphQLErrors.forEach(({ message, locations, path }) => {
       console.log(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      )
-    );
+      );
+    });
 
   if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
 const client = new ApolloClient({
   connectToDevTools: true,
-  link: from([authLink, httpLink, errorLink]),
+  link: from([authLink, errorLink, httpLink]),
   cache,
+});
+
+const Navbar = dynamic(import('../components/Navbar'), {
+  ssr: false,
 });
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
