@@ -8,7 +8,7 @@ import { usePatientRegisterMutation } from '../../generated/graphql';
 import { setToken, tokenVar } from '../../utils/tokenManager';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
-import ErrorDisplay from '../../components/ErrorDisplay';
+import ErrorAlert from '../../components/ErrorAlert';
 import * as Yup from 'yup';
 
 const PatientRegister = () => {
@@ -40,7 +40,7 @@ const PatientRegister = () => {
 
   return (
     <Wrapper variant='small'>
-      {error && <ErrorDisplay error={error} setError={setError} />}
+      {error && <ErrorAlert error={error} setError={setError} />}
       <Formik
         initialValues={{
           name: '',
@@ -50,6 +50,8 @@ const PatientRegister = () => {
           blood_group: '',
         }}
         validationSchema={patientRegisterValidationSchema}
+        validateOnChange={false}
+        validateOnBlur={false}
         onSubmit={async ({ name, email, password, gender, blood_group }) => {
           try {
             if (!name || !email || !password || !gender || !blood_group) {

@@ -6,12 +6,12 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 
-interface ErrorDisplayProps {
+interface ErrorAlertProps {
   error: string;
   setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const ErrorDisplay = ({ error, setError }: ErrorDisplayProps) => {
+const ErrorAlert = ({ error, setError }: ErrorAlertProps) => {
   return (
     <Alert status='error'>
       <AlertIcon />
@@ -26,4 +26,4 @@ const ErrorDisplay = ({ error, setError }: ErrorDisplayProps) => {
   );
 };
 
-export default ErrorDisplay;
+export default ErrorAlert;

@@ -9,7 +9,7 @@ import { setToken, tokenVar } from '../../utils/tokenManager';
 import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/dist/client/router';
 import * as Yup from 'yup';
-import ErrorDisplay from '../../components/ErrorDisplay';
+import ErrorAlert from '../../components/ErrorAlert';
 
 const DoctorRegister = () => {
   const [error, setError] = useState('');
@@ -55,7 +55,7 @@ const DoctorRegister = () => {
 
   return (
     <Wrapper variant='small'>
-      {error && <ErrorDisplay error={error} setError={setError} />}
+      {error && <ErrorAlert error={error} setError={setError} />}
       <Formik
         initialValues={{
           name: '',
@@ -65,6 +65,8 @@ const DoctorRegister = () => {
           designation: '',
         }}
         validationSchema={doctorRegisterValidationSchema}
+        validateOnChange={false}
+        validateOnBlur={false}
         onSubmit={async (values) => {
           try {
             const { data, errors } = await doctorRegister({

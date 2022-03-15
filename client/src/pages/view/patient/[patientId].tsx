@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { filter, get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NextLink from 'next/link';
 import RecordsTable from '../../../components/RecordsTable';
 import InfoTable from '../../../components/InfoTable';
@@ -22,15 +22,20 @@ import {
   useGetPatientRecordsQuery,
   useGetPatientsQuery,
 } from '../../../generated/graphql';
+import ErrorDialog from '../../../components/ErrorDialog';
 
-interface Props {}
-
-const PatientInfo = (props: Props) => {
-  const [loading, setLoading] = useState(false);
+const PatientInfo = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [errorIsOpen, setErrorIsOpen] = useState(false);
   const router = useRouter();
   const patientId = router.query.patientId as string;
 
-  const { data: patientsData, loading: loadingPatients } = useGetPatientsQuery({
+  const {
+    data: patientsData,
+    loading: patientsLoading,
+    error: patientsError,
+  } = useGetPatientsQuery({
     fetchPolicy: 'cache-first',
   });
   let patients = get(patientsData, 'getPatients', []);
@@ -38,11 +43,24 @@ const PatientInfo = (props: Props) => {
 
   const {
     data: recordsData,
-    loading: loadingRecords,
+    loading: recordsLoading,
+    error: recordsError,
     refetch: refetchRecords,
   } = useGetPatientRecordsQuery({ variables: { patientId } });
   let records = get(recordsData, 'getPatientRecords', []);
-  console.log(records);
+
+  useEffect(() => {
+    if (patientsLoading || recordsLoading) setLoading(true);
+    else if (patientsError || recordsError) {
+      let errorMsg = '';
+      if (patientsError) errorMsg = patientsError.message;
+      if (recordsError) errorMsg = recordsError.message;
+      setError(errorMsg);
+    } else {
+      setLoading(false);
+      setError('');
+    }
+  }, [patientsLoading, recordsLoading, patientsError, recordsError]);
 
   const refetchHandler = async () => {
     setLoading(true);
@@ -53,13 +71,18 @@ const PatientInfo = (props: Props) => {
 
   return (
     <Container maxW='container.xl'>
+      <ErrorDialog
+        error={error}
+        setIsOpen={setErrorIsOpen}
+        isOpen={errorIsOpen}
+      />
       <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
         <GridItem colSpan={2}>
           <Heading size='xl' fontWeight='medium'>
             User Profile
           </Heading>
           <Box boxShadow='md' borderRadius={8} p={4}>
-            {loadingPatients || loading ? (
+            {loading ? (
               <Spinner />
             ) : (
               <>
@@ -86,7 +109,7 @@ const PatientInfo = (props: Props) => {
 
             <TabPanels>
               <TabPanel>
-                {loadingRecords || loading ? (
+                {loading ? (
                   <Spinner />
                 ) : (
                   <RecordsTable patientId={patientId} records={records} />

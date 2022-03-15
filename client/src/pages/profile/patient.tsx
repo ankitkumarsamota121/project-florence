@@ -32,34 +32,70 @@ import {
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import InfoTable from '../../components/InfoTable';
+import ErrorDialog from '../../components/ErrorDialog';
 
 const PatientProfile = () => {
-  // const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [errorIsOpen, setErrorIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [loadingAccess, setLoadingAccess] = useState(false);
-  const { data: meData, loading: meLoading } = useMeQuery();
-  const userInfo = get(meData, 'me', null);
   const router = useRouter();
+
+  const { data: meData, loading: meLoading, error: meError } = useMeQuery();
+  let userInfo = get(meData, 'me', null);
 
   const {
     data: recordsData,
-    loading: loadingRecords,
+    loading: recordsLoading,
+    error: recordsError,
     refetch: refetchRecords,
   } = useGetRecordsQuery();
   let records = get(recordsData, 'getRecords', []);
 
   const {
     data: requestsData,
-    loading: loadingRequests,
+    loading: requestsLoading,
+    error: requestsError,
     refetch: refetchRequests,
   } = useGetConsentRequestsQuery();
   let requests = get(requestsData, 'getConsentRequests', []);
 
   useEffect(() => {
-    const curr = router.pathname;
-    const path = `/profile/${userInfo?.userType.toLowerCase()}`;
-    if (curr !== path) router.push('/');
-  }, [meLoading, loadingRecords, loadingRequests]);
+    if (meLoading || recordsLoading || requestsLoading) setLoading(true);
+    else if (meError || recordsError || requestsError) {
+      let errorMsg = '';
+      if (meError) errorMsg = meError.message;
+      if (recordsError) errorMsg = recordsError.message;
+      if (requestsError) errorMsg = requestsError.message;
+      setError(errorMsg);
+    } else {
+      setLoading(false);
+      setError('');
+    }
+  }, [
+    meLoading,
+    recordsLoading,
+    requestsLoading,
+    meError,
+    recordsError,
+    requestsError,
+  ]);
+
+  useEffect(() => {
+    if (!loading) {
+      const curr = router.pathname;
+      const path = `/profile/${userInfo?.userType.toLowerCase()}`;
+      if (curr !== path) router.push('/');
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    if (error) {
+      setErrorIsOpen(true);
+    } else {
+      setErrorIsOpen(false);
+    }
+  }, [error]);
 
   const refetchHandler = async () => {
     setLoading(true);
@@ -79,29 +115,38 @@ const PatientProfile = () => {
     doctorId: string,
     granted: boolean
   ) => {
-    setLoading(true);
-    if (granted) {
-      await grantAccess({
-        variables: { recordId: parseInt(recordId), doctorId },
+    setLoadingAccess(true);
+    try {
+      if (granted) {
+        await grantAccess({
+          variables: { recordId: parseInt(recordId), doctorId },
+        });
+      }
+      await deleteConsentRequest({
+        variables: { deleteConsentRequestId: parseInt(consentRequestId) },
       });
+      await refetchHandler();
+    } catch (error: any) {
+      setError(error.message);
     }
-    await deleteConsentRequest({
-      variables: { deleteConsentRequestId: parseInt(consentRequestId) },
-    });
-    await refetchHandler();
 
-    setLoading(false);
+    setLoadingAccess(false);
   };
 
   return (
     <Container maxW='container.xl'>
+      <ErrorDialog
+        isOpen={errorIsOpen}
+        setIsOpen={setErrorIsOpen}
+        error={error}
+      />
       <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
         <GridItem colSpan={2}>
           <Heading size='xl' fontWeight='medium'>
             User Profile
           </Heading>
           <Box boxShadow='md' borderRadius={8} p={4}>
-            {meLoading ? (
+            {loading ? (
               <Spinner />
             ) : (
               <>
@@ -129,7 +174,7 @@ const PatientProfile = () => {
 
             <TabPanels>
               <TabPanel>
-                {loadingRecords || loading ? (
+                {loading ? (
                   <Spinner />
                 ) : (
                   <RecordsTable
@@ -144,7 +189,7 @@ const PatientProfile = () => {
                 </NextLink>
               </TabPanel>
               <TabPanel>
-                {loadingRequests || loading ? (
+                {loading ? (
                   <Spinner />
                 ) : (
                   <VStack

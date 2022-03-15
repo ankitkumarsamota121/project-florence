@@ -20,27 +20,45 @@ import AddPatient from '../../components/AddPatient';
 import PatientsTable from '../../components/PatientsTable';
 import { useMeQuery, useGetPatientsQuery } from '../../generated/graphql';
 import InfoTable from '../../components/InfoTable';
+import ErrorDialog from '../../components/ErrorDialog';
 
-interface DoctorProfileProps {}
-
-const DoctorProfile = (props: DoctorProfileProps) => {
-  const [loading, setLoading] = useState(false);
-  const { data: meData, loading: meLoading } = useMeQuery();
-  const userInfo = get(meData, 'me', null);
+const DoctorProfile = () => {
+  const [error, setError] = useState('');
+  const [errorIsOpen, setErrorIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const { data: meData, loading: meLoading, error: meError } = useMeQuery();
+  const userInfo = get(meData, 'me', null);
 
   const {
     data: patientsData,
-    loading: loadingPatients,
+    loading: patientsLoading,
+    error: patientsError,
     refetch: refetchPatients,
   } = useGetPatientsQuery();
   let patients = get(patientsData, 'getPatients', []);
 
   useEffect(() => {
-    const curr = router.pathname;
-    const path = `/profile/${userInfo?.userType.toLowerCase()}`;
-    if (curr !== path) router.push('/');
-  }, [meLoading]);
+    if (meLoading || patientsLoading) setLoading(true);
+    else if (meError || patientsLoading) {
+      let errorMsg = '';
+      if (meError) errorMsg = meError.message;
+      if (patientsError) errorMsg = patientsError.message;
+      setError(errorMsg);
+    } else {
+      setLoading(false);
+      setError('');
+    }
+  }, [meLoading, patientsLoading, meError, patientsError]);
+
+  useEffect(() => {
+    if (!loading) {
+      const curr = router.pathname;
+      const path = `/profile/${userInfo?.userType.toLowerCase()}`;
+      if (curr !== path) router.push('/');
+    }
+  }, [loading]);
 
   const refetchHandler = async () => {
     setLoading(true);
@@ -51,6 +69,11 @@ const DoctorProfile = (props: DoctorProfileProps) => {
 
   return (
     <Container maxW='container.xl'>
+      <ErrorDialog
+        isOpen={errorIsOpen}
+        setIsOpen={setErrorIsOpen}
+        error={error}
+      />
       <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
         <GridItem colSpan={2}>
           <Heading size='xl' fontWeight='medium'>

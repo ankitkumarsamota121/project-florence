@@ -8,7 +8,7 @@ import { setToken, tokenVar } from '../utils/tokenManager';
 import { useRouter } from 'next/dist/client/router';
 import { useReactiveVar } from '@apollo/client';
 import UserTypeField from '../components/UserTypeField';
-import ErrorDisplay from '../components/ErrorDisplay';
+import ErrorAlert from '../components/ErrorAlert';
 import * as Yup from 'yup';
 import { DOCTOR, PATIENT } from '../constants/userType';
 
@@ -34,11 +34,13 @@ const Login = () => {
 
   return (
     <Wrapper variant='small'>
-      {error && <ErrorDisplay error={error} setError={setError} />}
+      {error && <ErrorAlert error={error} setError={setError} />}
 
       <Formik
         initialValues={{ email: '', password: '', userType: '' }}
         validationSchema={loginValidationSchema}
+        validateOnChange={false}
+        validateOnBlur={false}
         onSubmit={async (values) => {
           try {
             setError('');
