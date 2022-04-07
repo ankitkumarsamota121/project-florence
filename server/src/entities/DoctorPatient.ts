@@ -1,9 +1,11 @@
 import {
   BaseEntity,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Doctor } from './Doctor';
 // import { Doctor } from './Doctor';
@@ -16,6 +18,12 @@ export class DoctorPatient extends BaseEntity {
 
   @PrimaryColumn()
   patientId: string;
+
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @UpdateDateColumn()
+  updatedDate: Date;
 
   @ManyToOne(() => Doctor, (doctor) => doctor.patientConnection, {
     primary: true,

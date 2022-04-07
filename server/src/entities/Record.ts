@@ -2,10 +2,12 @@ import { Field, ID, ObjectType } from 'type-graphql';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Patient } from './Patient';
 import { DoctorRecord } from './DoctorRecord';
@@ -35,6 +37,14 @@ export class Record extends BaseEntity {
   @Field()
   @Column()
   description: string;
+
+  @Field()
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @Field()
+  @UpdateDateColumn()
+  updatedDate: Date;
 
   @OneToMany(() => Attachment, (attachment) => attachment.record)
   attachments: Promise<Attachment[]>;

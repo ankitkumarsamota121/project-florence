@@ -1,4 +1,10 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ObjectType, Field } from 'type-graphql';
 import { User } from './User';
 import { Record } from './Record';
@@ -15,6 +21,14 @@ export class Patient extends User {
   @Field()
   @Column()
   blood_group: string;
+
+  @Field()
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @Field()
+  @UpdateDateColumn()
+  updatedDate: Date;
 
   @OneToMany(() => Record, (record) => record.patient)
   records: Promise<Record[]>;

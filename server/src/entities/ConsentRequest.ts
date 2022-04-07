@@ -2,9 +2,11 @@ import { Field, ID, ObjectType } from 'type-graphql';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Doctor } from './Doctor';
 import { Patient } from './Patient';
@@ -20,6 +22,14 @@ export class ConsentRequest extends BaseEntity {
   @Field()
   @Column()
   content: string;
+
+  @Field()
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @Field()
+  @UpdateDateColumn()
+  updatedDate: Date;
 
   @Field(() => Patient)
   @ManyToOne(() => Patient, (patient) => patient.requests)

@@ -1,4 +1,10 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ObjectType, Field } from 'type-graphql';
 import { User } from './User';
 import { DoctorPatient } from './DoctorPatient';
@@ -19,6 +25,14 @@ export class Doctor extends User {
   @Field()
   @Column()
   designation: string;
+
+  @Field()
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @Field()
+  @UpdateDateColumn()
+  updatedDate: Date;
 
   @OneToMany(() => DoctorPatient, (dp) => dp.doctor)
   patientConnection: Promise<DoctorPatient[]>;
