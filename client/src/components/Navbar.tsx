@@ -9,6 +9,7 @@ import {
   MenuItem,
   MenuList,
   Spacer,
+  Text,
 } from '@chakra-ui/react';
 import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
@@ -47,6 +48,9 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
 
   return (
     <Flex backgroundColor='lightblue' py={4}>
+      <Text fontSize='3xl' ml={4}>
+        florence
+      </Text>
       <Spacer />
       {token ? (
         <Menu>
