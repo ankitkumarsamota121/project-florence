@@ -5,13 +5,16 @@ interface WrapperProps {
   variant?: 'small' | 'regular';
 }
 
-const Wrapper: React.FC<WrapperProps> = ({ children, variant = 'regular' }) => {
+const Wrapper: React.FC<WrapperProps> = ({ children, variant }) => {
   return (
     <Box
       mt={8}
       mx='auto'
-      maxW={variant === 'regular' ? '800px' : '400px'}
-      w='100%'
+      maxW={
+        variant === 'small' ? '400px' : variant === 'regular' ? '800px' : 'auto'
+      }
+      // w='100%'
+      minH='80vh'
     >
       {children}
     </Box>

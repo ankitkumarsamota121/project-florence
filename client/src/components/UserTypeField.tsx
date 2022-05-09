@@ -1,11 +1,11 @@
 import {
   FormControl,
   FormLabel,
-  Input,
   FormErrorMessage,
   Radio,
   RadioGroup,
   Stack,
+  HStack,
 } from '@chakra-ui/react';
 import { useField } from 'formik';
 import React, { InputHTMLAttributes } from 'react';
@@ -25,19 +25,23 @@ const InputField: React.FC<InputFieldProps> = ({
 
   return (
     <FormControl isInvalid={!!error}>
-      <FormLabel htmlFor={field.name}>{label}</FormLabel>
-      <RadioGroup id={field.name}>
-        <Stack direction='row'>
-          <Radio {...field} value={PATIENT}>
-            Patient
-          </Radio>
+      <HStack>
+        <FormLabel htmlFor={field.name} mb={0}>
+          {label} :
+        </FormLabel>
+        <RadioGroup id={field.name}>
+          <Stack direction='row'>
+            <Radio {...field} value={PATIENT}>
+              Patient
+            </Radio>
 
-          <Radio {...field} value={DOCTOR}>
-            Doctor
-          </Radio>
-        </Stack>
-        {error && <FormErrorMessage>{error}</FormErrorMessage>}
-      </RadioGroup>
+            <Radio {...field} value={DOCTOR}>
+              Doctor
+            </Radio>
+          </Stack>
+          {error && <FormErrorMessage>{error}</FormErrorMessage>}
+        </RadioGroup>
+      </HStack>
     </FormControl>
   );
 };

@@ -45,6 +45,10 @@ const Navbar = dynamic(import('../components/Navbar'), {
   ssr: false,
 });
 
+const Footer = dynamic(import('../components/Footer'), {
+  ssr: false,
+});
+
 const MyApp = ({ Component, pageProps }: AppProps) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
@@ -59,6 +63,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       <ChakraProvider theme={theme} resetCSS>
         <Navbar />
         <Component {...pageProps} />
+        <Footer />
       </ChakraProvider>
     </ApolloProvider>
   );

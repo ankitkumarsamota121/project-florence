@@ -79,7 +79,7 @@ const PatientInfo = () => {
       <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
         <GridItem colSpan={2}>
           <Heading size='xl' fontWeight='medium'>
-            User Profile
+            Patient Profile View
           </Heading>
           <Box boxShadow='md' borderRadius={8} p={4}>
             {loading ? (

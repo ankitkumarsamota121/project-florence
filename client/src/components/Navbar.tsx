@@ -1,5 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { ChevronDownIcon } from '@chakra-ui/icons';
+import Link from 'next/link';
 import {
   Box,
   Button,
@@ -49,7 +50,7 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
   return (
     <Flex backgroundColor='lightblue' py={4}>
       <Text fontSize='3xl' ml={4}>
-        florence
+        <Link href='/'>florence</Link>
       </Text>
       <Spacer />
       {token ? (

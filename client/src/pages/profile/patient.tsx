@@ -20,6 +20,10 @@ import {
   Flex,
   Stack,
   Spacer,
+  Avatar,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
 } from '@chakra-ui/react';
 import RecordsTable from '../../components/RecordsTable';
 import {
@@ -33,6 +37,8 @@ import { get } from 'lodash';
 import { useRouter } from 'next/dist/client/router';
 import InfoTable from '../../components/InfoTable';
 import ErrorDialog from '../../components/ErrorDialog';
+import { ChevronRightIcon } from '@chakra-ui/icons';
+import Wrapper from '../../components/Wrapper';
 
 const PatientProfile = () => {
   const [error, setError] = useState('');
@@ -134,132 +140,143 @@ const PatientProfile = () => {
   };
 
   return (
-    <Container maxW='container.xl'>
-      <ErrorDialog
-        isOpen={errorIsOpen}
-        setIsOpen={setErrorIsOpen}
-        error={error}
-      />
-      <Grid templateColumns='repeat(6, 1fr)' gap={8} mt={4} fontSize='sm'>
-        <GridItem colSpan={2}>
-          <Heading size='xl' fontWeight='medium'>
-            User Profile
-          </Heading>
-          <Box boxShadow='md' borderRadius={8} p={4}>
-            {loading ? (
-              <Spinner />
-            ) : (
-              <>
-                <InfoTable data={userInfo?.user} />
-                <Button
-                  colorScheme='teal'
-                  variant='outline'
-                  mt={4}
-                  width='100%'
-                  height='50px'
-                  onClick={refetchHandler}
-                >
-                  Refetch
-                </Button>
-              </>
-            )}
-          </Box>
-        </GridItem>
-        <GridItem colSpan={4}>
-          <Tabs isFitted colorScheme='teal'>
-            <TabList>
-              <Tab _focus={{ outline: 'none' }}>Records</Tab>
-              <Tab _focus={{ outline: 'none' }}>Notifications</Tab>
-            </TabList>
+    <>
+      <Container maxW='container.xl' minH='80vh' p={0}>
+        <ErrorDialog
+          isOpen={errorIsOpen}
+          setIsOpen={setErrorIsOpen}
+          error={error}
+        />
+        <Grid templateColumns='repeat(6, 1fr)' gap={12} mt={4} fontSize='sm'>
+          <GridItem colSpan={2}>
+            {/* <Flex alignItems='center' justifyContent='space-around' px={16}>
+              <Box> */}
+            <Heading>Patient Profile</Heading>
+            {/* </Box>
+            </Flex> */}
 
-            <TabPanels>
-              <TabPanel>
-                {loading ? (
-                  <Spinner />
-                ) : (
-                  <RecordsTable
-                    patientId={userInfo!.user.id}
-                    records={records}
-                  />
-                )}
-                <NextLink href={`/add/record/${userInfo?.user.id}`}>
-                  <Button colorScheme='teal' mt={4} width='200px' height='50px'>
-                    Add Record
-                  </Button>
-                </NextLink>
-              </TabPanel>
-              <TabPanel>
-                {loading ? (
-                  <Spinner />
-                ) : (
-                  <VStack
-                    divider={<StackDivider borderColor='gray.200' />}
-                    spacing={4}
-                    align='stretch'
+            <Box boxShadow='md' borderRadius={8} p={4}>
+              {loading ? (
+                <Spinner />
+              ) : (
+                <>
+                  <InfoTable data={userInfo?.user} />
+                  <Button
+                    colorScheme='teal'
+                    variant='outline'
+                    mt={4}
+                    width='100%'
+                    height='50px'
+                    onClick={refetchHandler}
                   >
-                    {requests.map((r, idx) => (
-                      <Box p={5} shadow='md' borderWidth='1px' key={idx}>
-                        <Flex>
-                          <Box>
-                            <Text>
-                              <strong>{`Dr. ${r.doctor.name}`}</strong>
-                              {` has requested access to `}
-                              <NextLink href={`/view/record/${r.record.id}`}>
-                                <Link>
-                                  <strong>Record {r.record.id}</strong>
-                                </Link>
-                              </NextLink>
-                            </Text>
-                            <Text mt={4}>
-                              <strong>Message: </strong> {r.content}
-                            </Text>
-                          </Box>
-                          <Spacer />
-                          <Stack>
-                            {loadingAccess ? (
-                              <Spinner />
-                            ) : (
-                              <>
-                                <Button
-                                  colorScheme='teal'
-                                  onClick={() =>
-                                    requestHandler(
-                                      r.id,
-                                      r.record.id,
-                                      r.doctor.id,
-                                      true
-                                    )
-                                  }
-                                >
-                                  Approve
-                                </Button>
-                                <Button
-                                  onClick={() =>
-                                    requestHandler(
-                                      r.id,
-                                      r.record.id,
-                                      r.doctor.id,
-                                      false
-                                    )
-                                  }
-                                  colorScheme='red'
-                                >
-                                  Decline
-                                </Button>
-                              </>
-                            )}
-                          </Stack>
-                        </Flex>
-                      </Box>
-                    ))}
-                  </VStack>
-                )}
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-        </GridItem>
-      </Grid>
-    </Container>
+                    Refetch
+                  </Button>
+                </>
+              )}
+            </Box>
+          </GridItem>
+
+          <GridItem colSpan={4}>
+            <Tabs isFitted colorScheme='teal'>
+              <TabList>
+                <Tab _focus={{ outline: 'none' }}>Records</Tab>
+                <Tab _focus={{ outline: 'none' }}>Notifications</Tab>
+              </TabList>
+
+              <TabPanels>
+                <TabPanel>
+                  {loading ? (
+                    <Spinner />
+                  ) : (
+                    <RecordsTable
+                      patientId={userInfo!.user.id}
+                      records={records}
+                    />
+                  )}
+                  <NextLink href={`/add/record/${userInfo?.user.id}`}>
+                    <Button
+                      colorScheme='teal'
+                      mt={4}
+                      width='200px'
+                      height='50px'
+                    >
+                      Add Record
+                    </Button>
+                  </NextLink>
+                </TabPanel>
+                <TabPanel>
+                  {loading ? (
+                    <Spinner />
+                  ) : (
+                    <VStack
+                      divider={<StackDivider borderColor='gray.200' />}
+                      spacing={4}
+                      align='stretch'
+                    >
+                      {requests.map((r, idx) => (
+                        <Box p={5} shadow='md' borderWidth='1px' key={idx}>
+                          <Flex>
+                            <Box>
+                              <Text>
+                                <strong>{`Dr. ${r.doctor.name}`}</strong>
+                                {` has requested access to `}
+                                <NextLink href={`/view/record/${r.record.id}`}>
+                                  <Link>
+                                    <strong>Record {r.record.id}</strong>
+                                  </Link>
+                                </NextLink>
+                              </Text>
+                              <Text mt={4}>
+                                <strong>Message: </strong> {r.content}
+                              </Text>
+                            </Box>
+                            <Spacer />
+                            <Stack>
+                              {loadingAccess ? (
+                                <Spinner />
+                              ) : (
+                                <>
+                                  <Button
+                                    colorScheme='teal'
+                                    onClick={() =>
+                                      requestHandler(
+                                        r.id,
+                                        r.record.id,
+                                        r.doctor.id,
+                                        true
+                                      )
+                                    }
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    onClick={() =>
+                                      requestHandler(
+                                        r.id,
+                                        r.record.id,
+                                        r.doctor.id,
+                                        false
+                                      )
+                                    }
+                                    colorScheme='red'
+                                  >
+                                    Decline
+                                  </Button>
+                                </>
+                              )}
+                            </Stack>
+                          </Flex>
+                        </Box>
+                      ))}
+                    </VStack>
+                  )}
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </GridItem>
+        </Grid>
+      </Container>
+    </>
   );
 };
 

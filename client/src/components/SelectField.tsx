@@ -22,7 +22,9 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
   return (
     <FormControl isInvalid={!!error}>
-      <FormLabel htmlFor={field.name}>{label}</FormLabel>
+      <FormLabel htmlFor={field.name} fontSize='sm' mb={0}>
+        {label}
+      </FormLabel>
       <Select
         id={field.name}
         {...field}

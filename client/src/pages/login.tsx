@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
-import { Button, Spacer } from '@chakra-ui/react';
+import {
+  Button,
+  Center,
+  SimpleGrid,
+  Spacer,
+  Image,
+  Heading,
+} from '@chakra-ui/react';
 import Wrapper from '../components/Wrapper';
 import InputField from '../components/InputField';
 import { useLoginMutation } from '../generated/graphql';
@@ -34,48 +41,74 @@ const Login = () => {
 
   return (
     <Wrapper variant='small'>
-      {error && <ErrorAlert error={error} setError={setError} />}
+      <SimpleGrid columns={2} spacing={10} minH='80vh'>
+        <Center px={8}>
+          <Image
+            src='https://img.freepik.com/free-vector/medical-workers-analyzing-electronic-record_1262-19834.jpg?w=2000&t=st=1650476146~exp=1650476746~hmac=a90bf228285afad32ef68b93718166541b0418c5e73e87dd0d6e43115aba6771'
+            alt='Medical Workers Illustration'
+          />
+        </Center>
+        <Center flexDirection='column'>
+          {error && <ErrorAlert error={error} setError={setError} />}
+          <Heading textAlign='center' mb={12}>
+            Sign In
+          </Heading>
 
-      <Formik
-        initialValues={{ email: '', password: '', userType: '' }}
-        validationSchema={loginValidationSchema}
-        validateOnChange={false}
-        validateOnBlur={false}
-        onSubmit={async (values) => {
-          try {
-            setError('');
-            const { data, errors } = await login({
-              variables: { ...values },
-            });
-            if (errors) {
-              setError(errors[0].message);
-            } else {
-              setToken(data!.login.accessToken);
-            }
-          } catch (error: any) {
-            setError(error.message);
-          }
-        }}
-      >
-        {({ isSubmitting }) => (
-          <Form>
-            <InputField name='email' placeholder='Email' label='Email' />
-            <Spacer mt={4} />
-            <InputField
-              name='password'
-              placeholder='Password'
-              label='Password'
-              type='password'
-            />
-            <Spacer mt={4} />
-            <UserTypeField name='userType' label='User Type' />
+          <Formik
+            initialValues={{ email: '', password: '', userType: '' }}
+            validationSchema={loginValidationSchema}
+            validateOnChange={false}
+            validateOnBlur={false}
+            onSubmit={async (values) => {
+              try {
+                setError('');
+                const { data, errors } = await login({
+                  variables: { ...values },
+                });
+                if (errors) {
+                  setError(errors[0].message);
+                } else {
+                  setToken(data!.login.accessToken);
+                }
+              } catch (error: any) {
+                setError(error.message);
+              }
+            }}
+          >
+            {({ isSubmitting }) => (
+              <Form>
+                <Center flexDir='column'>
+                  <InputField
+                    name='email'
+                    placeholder='Email'
+                    label='Enter your email'
+                  />
+                  <Spacer mt={6} />
+                  <InputField
+                    name='password'
+                    placeholder='Enter your password'
+                    label='Password'
+                    type='password'
+                  />
+                  <Spacer mt={6} />
+                  <UserTypeField name='userType' label='User Type' />
 
-            <Button mt={4} type='submit' color='teal' isLoading={isSubmitting}>
-              Login
-            </Button>
-          </Form>
-        )}
-      </Formik>
+                  <Button
+                    mt={8}
+                    type='submit'
+                    color='teal'
+                    isLoading={isSubmitting}
+                    size='lg'
+                    px={16}
+                  >
+                    Login
+                  </Button>
+                </Center>
+              </Form>
+            )}
+          </Formik>
+        </Center>
+      </SimpleGrid>
     </Wrapper>
   );
 };

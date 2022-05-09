@@ -46,7 +46,7 @@ const RecordInfo = () => {
   }, [recordLoading, recordError]);
 
   return (
-    <Wrapper>
+    <Wrapper variant='regular'>
       <ErrorDialog
         error={error}
         setIsOpen={setErrorIsOpen}
