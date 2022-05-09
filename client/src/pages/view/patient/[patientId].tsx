@@ -70,7 +70,7 @@ const PatientInfo = () => {
   };
 
   return (
-    <Container maxW='container.xl'>
+    <Container maxW='container.xl' minH='80vh'>
       <ErrorDialog
         error={error}
         setIsOpen={setErrorIsOpen}

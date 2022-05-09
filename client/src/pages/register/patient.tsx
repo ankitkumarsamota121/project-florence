@@ -47,7 +47,7 @@ const PatientRegister = () => {
   });
 
   return (
-    <Wrapper variant='small'>
+    <Wrapper>
       <SimpleGrid columns={2} spacing={10} minH='80vh'>
         <Center px={8}>
           <Image
